@@ -5,6 +5,7 @@ import { pinoHttp } from 'pino-http';
 import { randomUUID } from 'node:crypto';
 import type { PrismaClient } from '@prisma/client';
 import type { Logger } from 'pino';
+import { CSP_DIRECTIVES, HSTS, PERMISSIONS_POLICY, REFERRER_POLICY } from '@clinic/shared';
 import type { Config } from './config.js';
 import { FieldCipher } from './lib/crypto.js';
 import type { Mailer } from './lib/email.js';
@@ -101,24 +102,17 @@ export function createApp(deps: AppDeps): Express {
 
   app.use(
     helmet({
+      // Values live in packages/shared/src/security.ts, shared with Nginx and e2e.
       contentSecurityPolicy: {
         useDefaults: false,
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'"],
-          styleSrc: ["'self'"],
-          imgSrc: ["'self'", 'data:'],
-          frameAncestors: ["'none'"],
-          baseUri: ["'self'"],
-          formAction: ["'self'"],
-        },
+        directives: Object.fromEntries(Object.entries(CSP_DIRECTIVES).map(([k, v]) => [k, [...v]])),
       },
-      strictTransportSecurity: { maxAge: 31536000, includeSubDomains: true },
-      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+      strictTransportSecurity: HSTS,
+      referrerPolicy: { policy: REFERRER_POLICY },
     }),
   );
   app.use((_req, res, next) => {
-    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    res.setHeader('Permissions-Policy', PERMISSIONS_POLICY);
     next();
   });
 

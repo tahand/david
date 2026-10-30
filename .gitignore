@@ -12,3 +12,7 @@ test-results/
 
 # Local agent worktrees and settings
 .claude/
+
+# Playwright
+apps/e2e/test-results/
+apps/e2e/playwright-report/

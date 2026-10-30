@@ -8,3 +8,4 @@ export * from './availability.js';
 export * from './appointments.js';
 export * from './theme.js';
 export * from './admin.js';
+export * from './security.js';

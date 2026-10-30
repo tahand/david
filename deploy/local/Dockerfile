@@ -20,6 +20,7 @@ COPY package.json package-lock.json ./
 COPY packages/shared/package.json packages/shared/
 COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
+COPY apps/e2e/package.json apps/e2e/
 COPY apps/api/prisma apps/api/prisma
 RUN npm ci --no-audit --no-fund
 
