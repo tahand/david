@@ -16,20 +16,28 @@
     "db:migrate:dev": "node scripts/prisma-migrator.mjs migrate dev",
     "db:seed": "tsx --conditions=@clinic/source prisma/seed.ts",
     "db:status": "node scripts/prisma-migrator.mjs migrate status",
-    "test:db": "vitest run --config vitest.db.config.ts"
+    "test:db": "vitest run --config vitest.db.config.ts",
+    "create-admin": "tsx --conditions=@clinic/source scripts/create-admin.ts"
   },
   "dependencies": {
     "@clinic/shared": "*",
     "@prisma/client": "~6.19.3",
     "argon2": "^0.45.1",
+    "cookie-parser": "^1.4.7",
     "express": "^4.22.3",
     "helmet": "^8.3.0",
+    "nodemailer": "^10.3.1",
+    "otplib": "^13.5.0",
     "pino": "^9.14.0",
     "pino-http": "^10.5.0",
+    "qrcode": "^1.5.4",
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^4.17.25",
+    "@types/nodemailer": "^8.0.2",
+    "@types/qrcode": "^1.5.6",
     "@types/supertest": "^7.2.1",
     "pino-pretty": "^13.2.0",
     "prisma": "~6.19.3",
