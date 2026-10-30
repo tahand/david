@@ -55,7 +55,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl"
+        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-lg bg-white p-5 shadow-xl sm:p-6"
       >
         <h2 id={titleId} className="text-lg font-semibold text-slate-900">
           {title}

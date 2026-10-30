@@ -17,6 +17,7 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
 - `npm run build` — shared → api → web.
 - `npm run db:migrate` / `db:seed` — migrations run as `app_migrator` via `apps/api/scripts/prisma-migrator.mjs`; the app and seed run as `app_user`.
 - `npm run test:db` — `*.db.test.ts` against `clinic_test` (dev container on port 5433). Never call `prisma migrate reset` from automation; tests must use unique rows instead of relying on a clean DB.
+- `local.cmd start|stop|restart|reset|logs|status|admin|psql` — the whole system in Docker for testing on Windows (`scripts/local.ps1` + `docker-compose.local.yml`, images in `deploy/local/`). Serves http://localhost:8080, Mailpit on :8026; secrets in a generated, gitignored `.env.docker`. Keep it working: when a phase adds an env var, service or build step, update the compose file and the Dockerfile too. Windows scripts must run in Windows PowerShell 5.1 (no `&&`, ternaries or `??`).
 
 ## Database
 
@@ -64,5 +65,6 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
 - DB: Prisma only; raw SQL only via the `$queryRaw` tagged template.
 - Dates: UTC in the DB, `date-fns` + `date-fns-tz` for clinic-timezone logic; never server local time.
 - Frontend: no `dangerouslySetInnerHTML`, no `localStorage`/`sessionStorage` (ESLint enforces both).
+- Mobile-friendly is a requirement for every screen. Build mobile-first: the base Tailwind classes target a 360px-wide phone, and `sm:`/`md:` add the wider layout. No horizontal page scrolling. Touch targets are at least 44px (`min-h-11`), and inputs use `text-base` so iOS doesn't zoom. Use one set of markup that reflows (stacked cards on phones, grid or table from `sm` up), not separate mobile and desktop copies. Check new pages at phone width (DevTools device mode) before finishing.
 - Dependencies: keep `npm audit` clean (high/critical blocks). `overrides` in root `package.json` pins `deepmerge-ts` ≥ 8 for Prisma 6.
 - Conventional commits.

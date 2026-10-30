@@ -93,11 +93,18 @@ const toFormValues = (p: PatientRecord): FormInput => ({
 
 function RemoveButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <Button variant="link" className="self-start text-sm sm:self-end sm:pb-2.5" onClick={onClick}>
+    <Button
+      variant="link"
+      className="min-h-11 self-start text-sm sm:min-h-0 sm:self-end sm:pb-2.5"
+      onClick={onClick}
+    >
       Remove<span className="sr-only"> {label}</span>
     </Button>
   );
 }
+
+/** Each repeated entry is a bordered card on phones and a plain grid row from `sm` up. */
+const ROW = 'grid gap-3 rounded-md border border-slate-200 p-3 sm:border-0 sm:p-0';
 
 /** Replaces the whole medical section (doctors and reception only). */
 export function MedicalSummaryForm({
@@ -142,7 +149,7 @@ export function MedicalSummaryForm({
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 font-semibold text-slate-900">Allergies</legend>
         {allergies.fields.map((field, i) => (
-          <div key={field.id} className="grid gap-3 sm:grid-cols-[1fr_1fr_12rem_auto]">
+          <div key={field.id} className={`${ROW} sm:grid-cols-[1fr_1fr_12rem_auto]`}>
             <TextField
               label={`Allergy ${i + 1}: substance`}
               error={errors.allergies?.[i]?.substance?.message}
@@ -174,7 +181,7 @@ export function MedicalSummaryForm({
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 font-semibold text-slate-900">Current medications</legend>
         {medications.fields.map((field, i) => (
-          <div key={field.id} className="grid gap-3 sm:grid-cols-[1fr_10rem_12rem_auto]">
+          <div key={field.id} className={`${ROW} sm:grid-cols-[1fr_10rem_12rem_auto]`}>
             <TextField
               label={`Medication ${i + 1}: name`}
               error={errors.medications?.[i]?.name?.message}
@@ -205,7 +212,7 @@ export function MedicalSummaryForm({
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 font-semibold text-slate-900">Long-term conditions</legend>
         {conditions.fields.map((field, i) => (
-          <div key={field.id} className="grid gap-3 sm:grid-cols-[1fr_11rem_1fr_auto]">
+          <div key={field.id} className={`${ROW} sm:grid-cols-[1fr_11rem_1fr_auto]`}>
             <TextField
               label={`Condition ${i + 1}`}
               error={errors.conditions?.[i]?.condition?.message}

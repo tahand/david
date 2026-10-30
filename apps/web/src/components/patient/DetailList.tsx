@@ -30,7 +30,7 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-6">
+    <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
         {action}

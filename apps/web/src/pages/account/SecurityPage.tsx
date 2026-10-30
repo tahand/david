@@ -20,7 +20,10 @@ const errorText = (err: unknown) =>
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const id = useId();
   return (
-    <section aria-labelledby={id} className="rounded-lg border border-slate-200 bg-white p-6">
+    <section
+      aria-labelledby={id}
+      className="rounded-lg border border-slate-200 bg-white p-4 sm:p-6"
+    >
       <h2 id={id} className="mb-4 text-lg font-semibold text-slate-900">
         {title}
       </h2>
@@ -254,7 +257,8 @@ function Sessions() {
       <ul className="divide-y divide-slate-200">
         {sessions.data?.sessions.map((s) => (
           <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-            <div className="text-sm text-slate-800">
+            {/* User-agent strings are long and unbroken; let them wrap on phones. */}
+            <div className="min-w-0 text-sm break-words text-slate-800">
               <p className="font-medium text-slate-900">
                 {s.userAgent ?? 'Unknown device'}
                 {s.current && (
@@ -270,7 +274,7 @@ function Sessions() {
             </div>
             <Button
               variant="secondary"
-              className="!px-3 !py-1.5 text-sm"
+              className="min-h-11 !px-3 text-sm"
               loading={revoke.isPending && revoke.variables === s.id}
               onClick={() => revoke.mutate(s.id)}
             >

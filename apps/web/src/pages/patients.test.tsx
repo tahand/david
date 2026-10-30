@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import type { PatientRecord } from '@clinic/shared';
 import { apiError, currentPath, meFor, mockApi, renderApp } from '../test/mockApi';
 
@@ -173,9 +173,13 @@ describe('patient search (SPEC §10)', () => {
     const link = await screen.findByRole('link', { name: 'Fakeson, Pat (Patty)' });
     expect(link).toHaveAttribute('href', `/patients/${ID}`);
     expect(currentPath(router)).toBe('/patients?q=fakeson');
-    const row = link.closest('tr')!;
-    expect(within(row).getByText('31 Jan 1990')).toBeInTheDocument();
-    expect(within(row).getByText('—')).toBeInTheDocument();
+    const row = link.closest('li')!;
+    expect(row).toHaveTextContent('Date of birth: 31 Jan 1990');
+    expect(row).toHaveTextContent('Postcode: EX1 1AA');
+    expect(row).toHaveTextContent('Mobile: —');
+    expect(screen.getByRole('list', { name: 'Patients matching "fakeson", page 1' })).toBe(
+      row.parentElement,
+    );
     expect(api.callsTo('GET', '/api/patients?page=1&search=fakeson')).toHaveLength(1);
   });
 

@@ -7,6 +7,15 @@ import { Alert, Button, Spinner, TextField } from '../../components/forms';
 import { PageHeading } from '../../components/layouts';
 import { formatDate } from '../../lib/format';
 
+function ResultField({ label, value }: { label: string; value: string | null }) {
+  return (
+    <p className="text-slate-900">
+      <span className="text-slate-700 sm:sr-only">{label}: </span>
+      {value ?? '—'}
+    </p>
+  );
+}
+
 /** Staff patient search (SPEC §10): name, date of birth, postcode or phone. */
 export function PatientsPage() {
   const { me } = useAuth();
@@ -60,7 +69,9 @@ export function PatientsPage() {
             maxLength={100}
           />
         </div>
-        <Button type="submit">Search</Button>
+        <Button type="submit" className="w-full sm:w-auto">
+          Search
+        </Button>
       </form>
 
       {query.isPending ? (
@@ -73,46 +84,40 @@ export function PatientsPage() {
         </p>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-            <table className="w-full text-left text-sm">
-              <caption className="sr-only">
-                {search ? `Patients matching "${search}"` : 'Patients'}, page {page}
-              </caption>
-              <thead className="border-b border-slate-200 bg-slate-50 text-slate-900">
-                <tr>
-                  <th scope="col" className="px-4 py-3 font-semibold">
-                    Name
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-semibold">
-                    Date of birth
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-semibold">
-                    Postcode
-                  </th>
-                  <th scope="col" className="px-4 py-3 font-semibold">
-                    Mobile
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {query.data.patients.map((p) => (
-                  <tr key={p.id} className="border-b border-slate-100 last:border-0">
-                    <td className="px-4 py-3">
-                      <Link
-                        to={`/patients/${p.id}`}
-                        className="font-medium text-brand-700 underline"
-                      >
-                        {p.lastName}, {p.firstName}
-                        {p.preferredName && ` (${p.preferredName})`}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-slate-900">{formatDate(p.dateOfBirth)}</td>
-                    <td className="px-4 py-3 text-slate-900">{p.postcode ?? '—'}</td>
-                    <td className="px-4 py-3 text-slate-900">{p.phoneMobile ?? '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* One list for every screen size: stacked cards on phones, a
+              table-like grid from `sm` up. Field labels are visible on phones
+              and screen-reader-only on wider screens. */}
+          <div className="rounded-lg border border-slate-200 bg-white text-sm">
+            <div
+              aria-hidden="true"
+              className="hidden grid-cols-[2fr_1fr_1fr_1fr] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 font-semibold text-slate-900 sm:grid"
+            >
+              <span>Name</span>
+              <span>Date of birth</span>
+              <span>Postcode</span>
+              <span>Mobile</span>
+            </div>
+            <ul
+              aria-label={`${search ? `Patients matching "${search}"` : 'Patients'}, page ${page}`}
+            >
+              {query.data.patients.map((p) => (
+                <li
+                  key={p.id}
+                  className="grid gap-1 border-b border-slate-100 px-4 py-3 last:border-0 sm:grid-cols-[2fr_1fr_1fr_1fr] sm:gap-4"
+                >
+                  <Link
+                    to={`/patients/${p.id}`}
+                    className="flex min-h-11 items-center font-medium text-brand-700 underline sm:min-h-0"
+                  >
+                    {p.lastName}, {p.firstName}
+                    {p.preferredName && ` (${p.preferredName})`}
+                  </Link>
+                  <ResultField label="Date of birth" value={formatDate(p.dateOfBirth)} />
+                  <ResultField label="Postcode" value={p.postcode} />
+                  <ResultField label="Mobile" value={p.phoneMobile} />
+                </li>
+              ))}
+            </ul>
           </div>
           <nav aria-label="Pagination" className="flex items-center gap-3">
             <Button variant="secondary" disabled={page <= 1} onClick={() => go(search, page - 1)}>

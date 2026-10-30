@@ -29,9 +29,9 @@ function main() {
     isBreached: config.hibpCheckEnabled ? createHibpChecker({ logger }) : noBreachCheck,
   });
 
-  // Bind to loopback only; Nginx is the public entry point (SPEC §12.3).
-  const server = app.listen(config.port, '127.0.0.1', () => {
-    logger.info({ port: config.port }, 'api listening');
+  // Loopback by default; Nginx is the public entry point (SPEC §12.3).
+  const server = app.listen(config.port, config.host, () => {
+    logger.info({ host: config.host, port: config.port }, 'api listening');
   });
 
   const shutdown = (signal: string) => {

@@ -18,6 +18,34 @@ npm run dev:web         # http://localhost:5173
 
 The seed prints the shared dev password. No admin is seeded; create one with `npm run create-admin -- --email you@example.test` (prompts for the password). Staff accounts must set up two-step verification at first sign-in.
 
+## Run everything in Docker (Windows)
+
+For testing the built system without installing Node: only [Docker Desktop](https://www.docker.com/products/docker-desktop/) is needed (WSL 2 backend). From the repo root, in PowerShell or Command Prompt:
+
+```bat
+local.cmd start
+```
+
+The first run generates `.env.docker` with random secrets, builds the images, migrates and seeds the database, and waits until the app is up. Then open:
+
+- App: http://localhost:8080 (use `localhost`, not `127.0.0.1`, or sign-in fails the origin check)
+- Emails: http://localhost:8026 (Mailpit catches all outgoing mail)
+
+Demo logins all use the password `demo-password-not-for-production`: `test.patient@example.test`, `reception@example.test`, `dr.example@example.test`. Staff set up two-step verification on first sign-in, so have an authenticator app ready.
+
+| Command                              | What it does                                                     |
+| ------------------------------------ | ---------------------------------------------------------------- |
+| `local.cmd start [-NoSeed]`          | Build (if needed) and start; re-seeds demo data unless `-NoSeed` |
+| `local.cmd stop`                     | Stop the containers; data is kept                                |
+| `local.cmd restart`                  | Stop, rebuild and start (pick up code changes)                   |
+| `local.cmd logs [api\|web\|migrate]` | Follow logs                                                      |
+| `local.cmd status`                   | List the containers                                              |
+| `local.cmd admin you@example.test`   | Create an admin (prompts for a password)                         |
+| `local.cmd psql`                     | Open `psql` on the local database                                |
+| `local.cmd reset [-Force]`           | Delete the database, demo data and `.env.docker`                 |
+
+It runs alongside the dev setup above, using its own ports (8080, 8026) and Docker project (`clinic-local`). To check the phone layout, open the app in Chrome or Edge and press `Ctrl+Shift+M` for device mode. To test on a real phone, see the note in `docker-compose.local.yml`.
+
 ## Tests
 
 - `npm test` — unit and API tests, no database needed.
