@@ -20,6 +20,7 @@ import { AppError } from '../../lib/errors.js';
 import { getClinicSettings } from '../../lib/settings.js';
 import type { RequestAudit } from '../../middleware/audit.js';
 import { activeDoctor, type DoctorService } from '../doctors/service.js';
+import type { AppointmentNotice } from './notifications.js';
 import type {
   AppointmentListFilter,
   BookingCreate,
@@ -80,6 +81,8 @@ export interface AppointmentServiceDeps {
   cipher: FieldCipher;
   doctors: DoctorService;
   timezone: string;
+  /** Emails the patient after booking, rescheduling and cancelling (SPEC §7.4). */
+  notifier?: { notifyInBackground(kind: AppointmentNotice, appointmentId: string): void };
   now?: () => Date;
 }
 
@@ -268,6 +271,7 @@ export class AppointmentService {
         );
       }),
     );
+    this.deps.notifier?.notifyInBackground('booked', id);
     return this.dtoById(actor, id, settings);
   }
 
@@ -331,6 +335,7 @@ export class AppointmentService {
         );
       }),
     );
+    this.deps.notifier?.notifyInBackground('rescheduled', row.id);
     return this.dtoById(actor, row.id, settings);
   }
 
@@ -357,6 +362,7 @@ export class AppointmentService {
         tx,
       );
     });
+    this.deps.notifier?.notifyInBackground('cancelled', row.id);
     return this.dtoById(actor, row.id, settings);
   }
 

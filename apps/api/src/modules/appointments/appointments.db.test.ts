@@ -2,23 +2,20 @@ import { randomUUID } from 'node:crypto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Express } from 'express';
 import type { PrismaClient } from '@prisma/client';
-import {
-  addCalendarDays,
-  dateStringToColumn,
-  timeStringToColumn,
-  weekdayOf,
-  zonedToUtc,
-  zonedToday,
-} from '../../lib/clinicTime.js';
 import { createUser, login } from '../../test/auth-fixtures.js';
 import { TestClient } from '../../test/client.js';
 import { anonClient, patientClient, staffClient, uniqueName } from '../../test/clients.js';
 import { testPrisma } from '../../test/db.js';
 import { buildTestApp } from '../../test/helpers.js';
-
-const TZ = 'Europe/London';
-const MINUTE = 60_000;
-const HOUR = 60 * MINUTE;
+import {
+  HOUR,
+  MINUTE,
+  appointmentType as appointmentTypeFor,
+  at,
+  insertAppointment as insertAppointmentFor,
+  mondayAhead,
+  workingDoctor as workingDoctorFor,
+} from '../../test/scheduling.js';
 
 let prisma: PrismaClient;
 let app: Express;
@@ -30,57 +27,12 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
-/** First Monday at least `minDays` ahead in clinic time (inside the 60-day horizon). */
-function mondayAhead(minDays: number): string {
-  let d = addCalendarDays(zonedToday(TZ), minDays);
-  while (weekdayOf(d) !== 1) d = addCalendarDays(d, 1);
-  return d;
-}
 const SOON = mondayAhead(8);
-const at = (date: string, time: string) => zonedToUtc(`${date}T${time}`, TZ).toISOString();
-
-async function appointmentType(overrides: { patientBookable?: boolean } = {}) {
-  return prisma.appointmentType.create({
-    data: { name: `Type ${randomUUID()}`, durationMinutes: 15, colour: '#123456', ...overrides },
-  });
-}
-
-/** A signed-in doctor who works 08:00–18:00 every day. */
-async function workingDoctor() {
-  const doc = await staffClient(app, prisma, 'doctor', `Dr ${uniqueName()}`);
-  await prisma.availabilityRule.createMany({
-    data: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({
-      doctorId: doc.doctor!.id,
-      weekday,
-      startTime: timeStringToColumn('08:00'),
-      endTime: timeStringToColumn('18:00'),
-      validFrom: dateStringToColumn(zonedToday(TZ)),
-    })),
-  });
-  return doc;
-}
-
-/** Inserts an appointment directly, e.g. one that has already started. */
-async function insertAppointment(opts: {
-  patientId: string;
-  doctorId: string;
-  typeId: string;
-  startsAt: Date;
-  bookedByUserId: string;
-  status?: 'booked' | 'confirmed' | 'checked_in';
-}) {
-  return prisma.appointment.create({
-    data: {
-      patientId: opts.patientId,
-      doctorId: opts.doctorId,
-      appointmentTypeId: opts.typeId,
-      startsAt: opts.startsAt,
-      endsAt: new Date(opts.startsAt.getTime() + 15 * MINUTE),
-      bookedByUserId: opts.bookedByUserId,
-      status: opts.status ?? 'booked',
-    },
-  });
-}
+const workingDoctor = () => workingDoctorFor(app, prisma);
+const appointmentType = (overrides: { patientBookable?: boolean } = {}) =>
+  appointmentTypeFor(prisma, overrides);
+const insertAppointment = (opts: Parameters<typeof insertAppointmentFor>[1]) =>
+  insertAppointmentFor(prisma, opts);
 
 /** A fresh scenario: a working doctor, a bookable type and a signed-in patient. */
 async function scenario() {

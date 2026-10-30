@@ -16,6 +16,7 @@ import { csrfProtection } from './middleware/csrf.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { rateLimit } from './middleware/rateLimit.js';
 import { appointmentRoutes, appointmentTypeRoutes } from './modules/appointments/routes.js';
+import { AppointmentNotifier } from './modules/appointments/notifications.js';
 import { AppointmentService } from './modules/appointments/service.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { AuthService, type AuthLimits } from './modules/auth/service.js';
@@ -81,6 +82,13 @@ export function createApp(deps: AppDeps): Express {
     cipher,
     doctors: doctorService,
     timezone: config.clinicTimezone,
+    notifier: new AppointmentNotifier({
+      prisma,
+      mailer: deps.mailer,
+      logger,
+      appUrl: config.appUrl,
+      timezone: config.clinicTimezone,
+    }),
   });
 
   const app = express();

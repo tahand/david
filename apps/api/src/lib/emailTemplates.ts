@@ -93,3 +93,62 @@ export function mfaChangedMessage(
       footer(clinicName),
   };
 }
+
+export type AppointmentNotice = 'booked' | 'rescheduled' | 'cancelled' | 'reminder';
+
+export interface AppointmentEmailDetails {
+  to: string;
+  clinicName: string;
+  clinicAddress: string;
+  clinicPhone: string;
+  doctorName: string;
+  /** Already formatted in clinic time, e.g. "Monday 2 November 2026 at 09:00". */
+  when: string;
+  timezone: string;
+  /** Where a patient with an online account manages appointments; null without one. */
+  manageUrl: string | null;
+}
+
+const APPOINTMENT_SUBJECTS: Record<AppointmentNotice, string> = {
+  booked: 'Appointment booked',
+  rescheduled: 'Appointment moved',
+  cancelled: 'Appointment cancelled',
+  reminder: 'Appointment reminder',
+};
+
+const APPOINTMENT_INTROS: Record<AppointmentNotice, string> = {
+  booked: 'Your appointment is booked.',
+  rescheduled: 'Your appointment has moved to a new time.',
+  cancelled: 'Your appointment has been cancelled.',
+  reminder: 'This is a reminder that you have an appointment coming up.',
+};
+
+/**
+ * Booking, change, cancellation and reminder emails (SPEC §7.4). By design they
+ * carry only the date, time, doctor, clinic address and a link: never the
+ * appointment type, reason for visit or anything else medical.
+ */
+export function appointmentMessage(
+  kind: AppointmentNotice,
+  d: AppointmentEmailDetails,
+): EmailMessage {
+  const manage =
+    kind === 'cancelled'
+      ? d.manageUrl
+        ? `To book again, visit ${d.manageUrl} or call us on ${d.clinicPhone}.`
+        : `To book again, call us on ${d.clinicPhone}.`
+      : d.manageUrl
+        ? `To view, change or cancel it, visit ${d.manageUrl} or call us on ${d.clinicPhone}.`
+        : `To change or cancel it, call us on ${d.clinicPhone}.`;
+  return {
+    to: d.to,
+    subject: `${APPOINTMENT_SUBJECTS[kind]} — ${d.clinicName}`,
+    text:
+      `${APPOINTMENT_INTROS[kind]}\n\n` +
+      `When: ${d.when} (${d.timezone} time)\n` +
+      `Doctor: ${d.doctorName}\n` +
+      `Where: ${d.clinicName}, ${d.clinicAddress}\n\n` +
+      manage +
+      footer(d.clinicName),
+  };
+}
