@@ -10,6 +10,7 @@ import { FieldCipher } from './lib/crypto.js';
 import type { Mailer } from './lib/email.js';
 import type { BreachChecker } from './lib/hibp.js';
 import type { RateLimiter } from './lib/rateLimiter.js';
+import { auditContext } from './middleware/audit.js';
 import { loadSession } from './middleware/auth.js';
 import { csrfProtection } from './middleware/csrf.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
@@ -19,6 +20,8 @@ import { AuthService, type AuthLimits } from './modules/auth/service.js';
 import { SessionStore } from './modules/auth/sessions.js';
 import { clinicRoutes } from './modules/clinic/routes.js';
 import { healthRoutes, type DbCheck } from './modules/health/routes.js';
+import { patientRoutes } from './modules/patients/routes.js';
+import { PatientService } from './modules/patients/service.js';
 
 export interface RateLimitSettings {
   /** SPEC §11: 100 requests/min per IP. */
@@ -67,6 +70,7 @@ export function createApp(deps: AppDeps): Express {
     isBreached: deps.isBreached,
     limits: deps.authLimits,
   });
+  const patientService = new PatientService({ prisma, cipher });
 
   const app = express();
 
@@ -118,6 +122,7 @@ export function createApp(deps: AppDeps): Express {
     rateLimit(limiter, { name: 'global', limit: limits.globalPerMinute, windowSeconds: 60 }),
   );
   app.use('/api', loadSession(sessions));
+  app.use('/api', auditContext(prisma));
   app.use('/api', csrfProtection({ secret: config.sessionSecret, appOrigin: config.appOrigin }));
 
   app.use(
@@ -135,6 +140,7 @@ export function createApp(deps: AppDeps): Express {
   );
 
   app.use('/api/clinic', clinicRoutes(prisma));
+  app.use('/api/patients', patientRoutes({ service: patientService }));
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);

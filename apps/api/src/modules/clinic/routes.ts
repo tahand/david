@@ -19,6 +19,7 @@ export function clinicRoutes(prisma: PrismaClient): Router {
         clinicPhone: s.clinicPhone,
         clinicAddress: s.clinicAddress,
         consentVersion: s.consentVersion,
+        healthIdLabel: s.healthIdLabel,
       };
       res.setHeader('Cache-Control', 'public, max-age=300');
       res.json(body);

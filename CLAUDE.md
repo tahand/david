@@ -44,6 +44,13 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
 - Components in `components/forms.tsx` are labelled and wire errors via `aria-describedby`; keep new inputs on them.
 - Tests: `src/test/mockApi.tsx` (`mockApi`, `renderApp`, `meFor`) renders the real route tree in StrictMode with a stubbed `fetch`.
 
+## Patients & audit (phase 5)
+
+- Encrypt with `FieldCipher` (`lib/crypto.ts`) using the AAD builders in `lib/aad.ts` (table, column and row ID). Never change an existing AAD string; add a builder for each new `_enc` column. Rows that need an ID in the AAD generate it with `randomUUID()` before insert.
+- `req.audit(entry, tx?)` (`middleware/audit.ts`) fills in actor, IP and user agent. Await it before responding; pass the transaction for writes. Audit metadata holds IDs and field names only, never values or search text.
+- Doctor access to patients = at least one appointment with them (`PatientService.staffScope`). Out-of-scope records are 404 and audited as `patient.access_denied`.
+- Patient responses send `Cache-Control: no-store`. Shared Zod schemas live in `packages/shared/src/patients.ts`: in PATCH bodies, `null`/`''` clears a field and an absent field is left unchanged; inside nested objects, absent fields are normalised to `null`.
+
 ## Conventions
 
 - TypeScript `strict`; no `any` without a comment explaining why. ESM everywhere (`.js` suffix on relative imports in API/shared).

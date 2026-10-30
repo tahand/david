@@ -5,6 +5,8 @@ import {
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
 } from 'react';
 
 export function Spinner({ label = 'Loading' }: { label?: string }) {
@@ -154,6 +156,86 @@ export const PasswordField = forwardRef<HTMLInputElement, Omit<FieldProps, 'type
     );
   },
 );
+
+type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & {
+  label: string;
+  error?: string;
+  options: readonly { value: string; label: string }[];
+};
+
+export const SelectField = forwardRef<HTMLSelectElement, SelectProps>(function SelectField(
+  { label, error, options, id, className = '', ...rest },
+  ref,
+) {
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  const errorId = error ? `${inputId}-error` : undefined;
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={inputId} className="text-sm font-medium text-slate-900">
+        {label}
+      </label>
+      <select
+        ref={ref}
+        id={inputId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={errorId}
+        className={`rounded-md border bg-white px-3 py-2 text-base text-slate-900 ${
+          error ? 'border-red-700' : 'border-slate-500'
+        } ${className}`}
+        {...rest}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      {error && (
+        <p id={errorId} className="text-sm text-red-700">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+});
+
+type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label: string;
+  error?: string;
+};
+
+export const TextAreaField = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextAreaField(
+  { label, error, id, className = '', ...rest },
+  ref,
+) {
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  const errorId = error ? `${inputId}-error` : undefined;
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={inputId} className="text-sm font-medium text-slate-900">
+        {label}
+      </label>
+      <textarea
+        ref={ref}
+        id={inputId}
+        rows={3}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={errorId}
+        className={`rounded-md border px-3 py-2 text-base text-slate-900 ${
+          error ? 'border-red-700' : 'border-slate-500'
+        } ${className}`}
+        {...rest}
+      />
+      {error && (
+        <p id={errorId} className="text-sm text-red-700">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+});
 
 export const Checkbox = forwardRef<
   HTMLInputElement,

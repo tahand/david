@@ -12,10 +12,10 @@ export interface AuditEntry {
   metadata?: Prisma.InputJsonObject;
 }
 
-type Db = PrismaClient | Prisma.TransactionClient;
+export type AuditDb = PrismaClient | Prisma.TransactionClient;
 
 /** Appends to `audit_logs` (SPEC §6.2, §11). */
-export async function writeAudit(db: Db, entry: AuditEntry): Promise<void> {
+export async function writeAudit(db: AuditDb, entry: AuditEntry): Promise<void> {
   await db.auditLog.create({
     data: {
       actorUserId: entry.actorUserId ?? null,
