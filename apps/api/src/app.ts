@@ -19,6 +19,8 @@ import { authRoutes } from './modules/auth/routes.js';
 import { AuthService, type AuthLimits } from './modules/auth/service.js';
 import { SessionStore } from './modules/auth/sessions.js';
 import { clinicRoutes } from './modules/clinic/routes.js';
+import { doctorRoutes } from './modules/doctors/routes.js';
+import { DoctorService } from './modules/doctors/service.js';
 import { healthRoutes, type DbCheck } from './modules/health/routes.js';
 import { patientRoutes } from './modules/patients/routes.js';
 import { PatientService } from './modules/patients/service.js';
@@ -71,6 +73,7 @@ export function createApp(deps: AppDeps): Express {
     limits: deps.authLimits,
   });
   const patientService = new PatientService({ prisma, cipher });
+  const doctorService = new DoctorService({ prisma, timezone: config.clinicTimezone });
 
   const app = express();
 
@@ -139,8 +142,9 @@ export function createApp(deps: AppDeps): Express {
     }),
   );
 
-  app.use('/api/clinic', clinicRoutes(prisma));
+  app.use('/api/clinic', clinicRoutes(prisma, config.clinicTimezone));
   app.use('/api/patients', patientRoutes({ service: patientService }));
+  app.use('/api/doctors', doctorRoutes({ service: doctorService }));
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);

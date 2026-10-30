@@ -18,7 +18,14 @@ describe('GET /api/clinic', () => {
     const res = await new TestClient(app).get('/api/clinic');
     expect(res.status).toBe(200);
     expect(Object.keys(res.body).sort()).toEqual(
-      ['clinicAddress', 'clinicName', 'clinicPhone', 'consentVersion', 'healthIdLabel'].sort(),
+      [
+        'clinicAddress',
+        'clinicName',
+        'clinicPhone',
+        'consentVersion',
+        'healthIdLabel',
+        'timezone',
+      ].sort(),
     );
     expect(res.body.clinicName).toBeTruthy();
   });

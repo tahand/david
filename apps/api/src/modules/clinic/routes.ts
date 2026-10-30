@@ -8,7 +8,7 @@ import { getClinicSettings } from '../../lib/settings.js';
  * GET /api/clinic — public branding for the login and registration screens.
  * Exposes only non-sensitive display settings.
  */
-export function clinicRoutes(prisma: PrismaClient): Router {
+export function clinicRoutes(prisma: PrismaClient, timezone: string): Router {
   const router = Router();
   router.get(
     '/',
@@ -20,6 +20,7 @@ export function clinicRoutes(prisma: PrismaClient): Router {
         clinicAddress: s.clinicAddress,
         consentVersion: s.consentVersion,
         healthIdLabel: s.healthIdLabel,
+        timezone,
       };
       res.setHeader('Cache-Control', 'public, max-age=300');
       res.json(body);
