@@ -9,14 +9,14 @@ Requirements: Node 20.12+ (20 LTS in production), Docker Desktop (for local Post
 ```sh
 npm install
 cp .env.example .env    # then fill SESSION_SECRET and DATA_ENCRYPTION_KEY
-npm run db:up           # Postgres 16 on 127.0.0.1:5433 (creates clinic + clinic_test)
+npm run db:up           # Postgres 16 on 127.0.0.1:5433 + Mailpit (dev email UI: http://localhost:8025)
 npm run db:migrate      # applies migrations as app_migrator
 npm run db:seed         # demo doctors, receptionist, appointment types, fake patients
 npm run dev:api         # http://127.0.0.1:4000/api/health
 npm run dev:web         # http://localhost:5173
 ```
 
-The seed prints the shared dev password. No admin is seeded; create one with `npm run create-admin` (phase 3).
+The seed prints the shared dev password. No admin is seeded; create one with `npm run create-admin -- --email you@example.test` (prompts for the password). Staff accounts must set up two-step verification at first sign-in.
 
 ## Tests
 

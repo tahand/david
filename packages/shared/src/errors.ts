@@ -2,6 +2,9 @@ import { z } from 'zod';
 
 export const ERROR_CODES = [
   'VALIDATION_ERROR',
+  'INVALID_CREDENTIALS',
+  'INVALID_TOKEN',
+  'MFA_ENROLMENT_REQUIRED',
   'UNAUTHENTICATED',
   'FORBIDDEN',
   'NOT_FOUND',

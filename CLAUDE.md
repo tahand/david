@@ -25,6 +25,16 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
 - `audit_logs` and `clinical_notes` are append-only (grants + triggers). Corrections to notes are new rows with `amends_note_id`.
 - Columns ending `_enc` hold AES-256-GCM envelopes (phase 5); the key version is embedded in the envelope.
 
+## Auth (phase 3)
+
+- Sessions: `modules/auth/sessions.ts` (`__Host-sid`, SHA-256 of the ID stored). `req.auth` = full session, `req.pendingAuth` = awaiting MFA.
+- Guards: `requireAuth()` (staff without MFA get 403 `MFA_ENROLMENT_REQUIRED`; pass `{ allowMfaEnrolment: true }` only for enrolment endpoints) and `authorize(permission)` using `ROLE_PERMISSIONS` in `packages/shared/src/permissions.ts`.
+- Re-authentication failures inside a session return 400 `INVALID_CREDENTIALS`, never 401 (the SPA treats 401 as "signed out").
+- CSRF: signed double-submit (`GET /api/auth/csrf` → `X-CSRF-Token`) plus Origin check on every non-GET.
+- Rate limits: `PostgresRateLimiter` (`rate_limits` table). Global 100/min/IP; credential endpoints 5/min/IP; 10 failed logins/hour/account; lockout after 10 consecutive failures.
+- Sensitive emails are sent with `sendInBackground` so timing doesn't reveal account existence.
+- API tests: `src/test/client.ts` (`TestClient`) handles cookies, CSRF, Origin and a unique IP per client.
+
 ## Conventions
 
 - TypeScript `strict`; no `any` without a comment explaining why. ESM everywhere (`.js` suffix on relative imports in API/shared).

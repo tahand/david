@@ -1,6 +1,9 @@
 import { ConfigError, loadConfig } from './config.js';
 import { createLogger } from './lib/logger.js';
-import { createPrisma, prismaHealthCheck } from './lib/db.js';
+import { createPrisma } from './lib/db.js';
+import { createSmtpMailer } from './lib/email.js';
+import { createHibpChecker, noBreachCheck } from './lib/hibp.js';
+import { PostgresRateLimiter } from './lib/rateLimiter.js';
 import { createApp } from './app.js';
 
 function main() {
@@ -17,7 +20,14 @@ function main() {
 
   const logger = createLogger({ level: config.logLevel, pretty: config.env === 'development' });
   const prisma = createPrisma(config.databaseUrl);
-  const app = createApp({ config, logger, checkDb: prismaHealthCheck(prisma) });
+  const app = createApp({
+    config,
+    logger,
+    prisma,
+    mailer: createSmtpMailer(config),
+    limiter: new PostgresRateLimiter(prisma),
+    isBreached: config.hibpCheckEnabled ? createHibpChecker({ logger }) : noBreachCheck,
+  });
 
   // Bind to loopback only; Nginx is the public entry point (SPEC §12.3).
   const server = app.listen(config.port, '127.0.0.1', () => {

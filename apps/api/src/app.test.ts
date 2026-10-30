@@ -8,13 +8,13 @@ import { AppError } from './lib/errors.js';
 
 describe('GET /api/health', () => {
   it('returns ok when the DB is reachable', async () => {
-    const res = await request(buildTestApp()).get('/api/health');
+    const res = await request(buildTestApp().app).get('/api/health');
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ status: 'ok' });
   });
 
   it('returns 503 without leaking details when the DB is down', async () => {
-    const app = buildTestApp({
+    const { app } = buildTestApp({
       checkDb: async () => {
         throw new Error('connect ECONNREFUSED 127.0.0.1:5432');
       },
@@ -27,7 +27,7 @@ describe('GET /api/health', () => {
 
 describe('security headers', () => {
   it('sets CSP, HSTS and related headers', async () => {
-    const res = await request(buildTestApp()).get('/api/health');
+    const res = await request(buildTestApp().app).get('/api/health');
     expect(res.headers['content-security-policy']).toBe(
       "default-src 'self';script-src 'self';style-src 'self';img-src 'self' data:;frame-ancestors 'none';base-uri 'self';form-action 'self'",
     );
@@ -41,13 +41,13 @@ describe('security headers', () => {
 
 describe('error handling', () => {
   it('returns the consistent 404 shape for unknown API routes', async () => {
-    const res = await request(buildTestApp()).get('/api/nope');
+    const res = await request(buildTestApp().app).get('/api/nope');
     expect(res.status).toBe(404);
     expect(res.body).toEqual({ error: { code: 'NOT_FOUND', message: 'Not found' } });
   });
 
   it('rejects bodies over 100 KB with 413', async () => {
-    const res = await request(buildTestApp())
+    const res = await request(buildTestApp().app)
       .post('/api/health')
       .set('Content-Type', 'application/json')
       .send(JSON.stringify({ x: 'a'.repeat(110 * 1024) }));
@@ -56,7 +56,7 @@ describe('error handling', () => {
   });
 
   it('rejects malformed JSON with 400', async () => {
-    const res = await request(buildTestApp())
+    const res = await request(buildTestApp().app)
       .post('/api/health')
       .set('Content-Type', 'application/json')
       .send('{bad');
