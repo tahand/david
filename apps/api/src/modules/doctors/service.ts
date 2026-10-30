@@ -1,9 +1,10 @@
 import type { Doctor, Prisma, PrismaClient, User } from '@prisma/client';
-import type {
-  AvailabilityExceptionDto,
-  AvailabilityResponse,
-  DoctorProfile,
-  SlotsResponse,
+import {
+  ACTIVE_APPOINTMENT_STATUSES,
+  type AvailabilityExceptionDto,
+  type AvailabilityResponse,
+  type DoctorProfile,
+  type SlotsResponse,
 } from '@clinic/shared';
 import {
   addCalendarDays,
@@ -17,17 +18,14 @@ import {
 } from '../../lib/clinicTime.js';
 import { AppError } from '../../lib/errors.js';
 import { getClinicSettings } from '../../lib/settings.js';
-import { computeSlots } from '../../lib/slots.js';
+import { computeSlots, type Interval } from '../../lib/slots.js';
 import type { RequestAudit } from '../../middleware/audit.js';
 import type { AvailabilityUpdate, ExceptionCreate, SlotsQuery } from './schemas.js';
 
 type Actor = Pick<User, 'id' | 'role'>;
 
-/** Appointment statuses that hold a doctor's time (matches the no_overlap constraint). */
-export const ACTIVE_APPOINTMENT_STATUSES = ['booked', 'confirmed', 'checked_in'] as const;
-
 /** Doctors whose login is active and not deleted. */
-const activeDoctor: Prisma.DoctorWhereInput = { user: { isActive: true, deletedAt: null } };
+export const activeDoctor: Prisma.DoctorWhereInput = { user: { isActive: true, deletedAt: null } };
 
 const toProfile = (d: Doctor): DoctorProfile => ({
   id: d.id,
@@ -191,47 +189,12 @@ export class DoctorService {
     });
     if (!type) throw AppError.notFound('Appointment type not found');
 
-    const rangeStart = zonedToUtc(`${query.from}T00:00`, tz);
-    const rangeEnd = zonedToUtc(`${addCalendarDays(query.to, 1)}T00:00`, tz);
-    const overlapping = { startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart } };
-
-    const [rules, exceptions, appointments, settings] = await Promise.all([
-      this.prisma.availabilityRule.findMany({ where: { doctorId: doctor.id } }),
-      this.prisma.availabilityException.findMany({
-        where: { doctorId: doctor.id, ...overlapping },
-      }),
-      this.prisma.appointment.findMany({
-        where: {
-          doctorId: doctor.id,
-          status: { in: [...ACTIVE_APPOINTMENT_STATUSES] },
-          ...overlapping,
-        },
-        select: { startsAt: true, endsAt: true },
-      }),
-      getClinicSettings(this.prisma),
-    ]);
-
-    const now = this.now();
-    const slots = computeSlots({
-      rules: rules.map((r) => ({
-        weekday: r.weekday,
-        startTime: timeColumnToString(r.startTime),
-        endTime: timeColumnToString(r.endTime),
-        validFrom: dateColumnToString(r.validFrom),
-        validTo: r.validTo ? dateColumnToString(r.validTo) : null,
-      })),
-      exceptions: exceptions.map((e) => ({ type: e.type, start: e.startsAt, end: e.endsAt })),
-      busy: appointments.map((a) => ({ start: a.startsAt, end: a.endsAt })),
+    const slots = await this.availableSlots({
+      doctorId: doctor.id,
+      durationMinutes: type.durationMinutes,
       from: query.from,
       to: query.to,
-      timeZone: tz,
-      durationMinutes: type.durationMinutes,
-      notBefore: isPatient
-        ? new Date(now.getTime() + settings.bookingMinLeadMinutes * 60_000)
-        : now,
-      notAfter: isPatient
-        ? new Date(now.getTime() + settings.bookingMaxDaysAhead * 86_400_000)
-        : undefined,
+      forPatient: isPatient,
     });
 
     return {
@@ -248,6 +211,65 @@ export class DoctorService {
         };
       }),
     };
+  }
+
+  /**
+   * Free slots for a doctor on clinic-local dates [from, to]. Patients are held
+   * to the minimum lead time and booking horizon; staff get any future slot.
+   * `excludeAppointmentId` frees that appointment's own time (rescheduling).
+   */
+  async availableSlots(opts: {
+    doctorId: string;
+    durationMinutes: number;
+    from: string;
+    to: string;
+    forPatient: boolean;
+    excludeAppointmentId?: string;
+  }): Promise<Interval[]> {
+    const tz = this.deps.timezone;
+    const rangeStart = zonedToUtc(`${opts.from}T00:00`, tz);
+    const rangeEnd = zonedToUtc(`${addCalendarDays(opts.to, 1)}T00:00`, tz);
+    const overlapping = { startsAt: { lt: rangeEnd }, endsAt: { gt: rangeStart } };
+
+    const [rules, exceptions, appointments, settings] = await Promise.all([
+      this.prisma.availabilityRule.findMany({ where: { doctorId: opts.doctorId } }),
+      this.prisma.availabilityException.findMany({
+        where: { doctorId: opts.doctorId, ...overlapping },
+      }),
+      this.prisma.appointment.findMany({
+        where: {
+          doctorId: opts.doctorId,
+          status: { in: [...ACTIVE_APPOINTMENT_STATUSES] },
+          ...(opts.excludeAppointmentId ? { id: { not: opts.excludeAppointmentId } } : {}),
+          ...overlapping,
+        },
+        select: { startsAt: true, endsAt: true },
+      }),
+      getClinicSettings(this.prisma),
+    ]);
+
+    const now = this.now();
+    return computeSlots({
+      rules: rules.map((r) => ({
+        weekday: r.weekday,
+        startTime: timeColumnToString(r.startTime),
+        endTime: timeColumnToString(r.endTime),
+        validFrom: dateColumnToString(r.validFrom),
+        validTo: r.validTo ? dateColumnToString(r.validTo) : null,
+      })),
+      exceptions: exceptions.map((e) => ({ type: e.type, start: e.startsAt, end: e.endsAt })),
+      busy: appointments.map((a) => ({ start: a.startsAt, end: a.endsAt })),
+      from: opts.from,
+      to: opts.to,
+      timeZone: tz,
+      durationMinutes: opts.durationMinutes,
+      notBefore: opts.forPatient
+        ? new Date(now.getTime() + settings.bookingMinLeadMinutes * 60_000)
+        : now,
+      notAfter: opts.forPatient
+        ? new Date(now.getTime() + settings.bookingMaxDaysAhead * 86_400_000)
+        : undefined,
+    });
   }
 
   // ------------------------------------------------------------- helpers

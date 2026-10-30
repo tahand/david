@@ -1,50 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import type { PatientRecord } from '@clinic/shared';
+import { patientRecord } from '../test/fixtures';
 import { apiError, currentPath, meFor, mockApi, renderApp } from '../test/mockApi';
 
 const ID = '11111111-1111-4111-8111-111111111111';
 
-const record = (overrides: Partial<PatientRecord> = {}): PatientRecord => ({
-  id: ID,
-  hasLogin: true,
-  email: 'pat@example.test',
-  title: null,
-  firstName: 'Pat',
-  middleNames: null,
-  lastName: 'Fakeson',
-  preferredName: null,
-  dateOfBirth: '1990-01-31',
-  sexAtBirth: null,
-  genderIdentity: null,
-  pronouns: null,
-  healthId: '943 476 5919',
-  preferredLanguage: null,
-  interpreterRequired: false,
-  phoneMobile: '07700 900123',
-  phoneAlt: null,
-  addressLine1: null,
-  addressLine2: null,
-  city: null,
-  region: null,
-  postcode: 'EX1 1AA',
-  country: null,
-  preferredContact: 'email',
-  reminderConsent: true,
-  emergencyContact: null,
-  medicalSummary: {
-    allergies: [{ substance: 'Penicillin', reaction: 'Rash', severity: 'moderate' }],
-    medications: [],
-    conditions: [],
-  },
-  gpDetails: null,
-  accessibilityNeeds: null,
-  consentVersion: 'v1',
-  consentAt: '2026-01-01T00:00:00.000Z',
-  createdAt: '2026-01-01T00:00:00.000Z',
-  updatedAt: '2026-01-01T00:00:00.000Z',
-  ...overrides,
-});
+const record = (overrides: Partial<PatientRecord> = {}) => patientRecord({ id: ID, ...overrides });
 
 const type = (label: string | RegExp, value: string) =>
   fireEvent.change(screen.getByLabelText(label), { target: { value } });

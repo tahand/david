@@ -1,14 +1,60 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
+import { appointmentKeys, appointmentsApi } from '../../api/appointments';
 import { authApi } from '../../api/auth';
 import { useAuth } from '../../auth/AuthProvider';
-import { Alert, Button } from '../../components/forms';
+import { isUpcoming } from '../../components/appointments/AppointmentList';
+import { StatusBadge } from '../../components/appointments/StatusBadge';
+import { Alert, Button, Spinner } from '../../components/forms';
 import { PageHeading } from '../../components/layouts';
+import { formatLocalRange } from '../../lib/format';
 
-/**
- * Patient home (SPEC §10). Account alerts are live now; the next-appointment
- * card and booking arrive with phase 7.
- */
+const linkButton =
+  'inline-flex min-h-11 items-center rounded-md px-4 font-medium bg-brand text-on-brand hover:bg-brand-hover';
+
+/** Next appointment, with links to book and to the full list. */
+function NextAppointment({ canBook }: { canBook: boolean }) {
+  const query = useQuery({
+    queryKey: appointmentKeys.list({}),
+    queryFn: () => appointmentsApi.list(),
+  });
+  const next = query.data?.appointments.find((a) => isUpcoming(a));
+  return (
+    <section className="flex flex-col gap-3 rounded-lg border border-line bg-card p-4 sm:p-6">
+      <h2 className="text-lg font-semibold text-heading">Next appointment</h2>
+      {query.isPending ? (
+        <Spinner label="Loading appointments" />
+      ) : query.isError ? (
+        <p className="text-ink">We couldn't load your appointments.</p>
+      ) : next ? (
+        <div>
+          <p className="font-semibold text-ink">
+            {formatLocalRange(next.startsAtLocal, next.endsAtLocal)}
+          </p>
+          <p className="text-ink">
+            {next.appointmentType.name} with {next.doctor.displayName}{' '}
+            <StatusBadge status={next.status} />
+          </p>
+        </div>
+      ) : (
+        <p className="text-ink">You have no upcoming appointments.</p>
+      )}
+      <div className="flex flex-wrap items-center gap-4">
+        {canBook && (
+          <Link to="/book" className={linkButton}>
+            Book appointment
+          </Link>
+        )}
+        <Link to="/appointments" className="text-link underline">
+          All appointments
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+/** Patient home (SPEC §10): account alerts and the next appointment. */
 export function DashboardPage() {
   const { me } = useAuth();
   const [resent, setResent] = useState(false);
@@ -53,10 +99,7 @@ export function DashboardPage() {
           </Link>
         </Alert>
       )}
-      <section className="rounded-lg border border-line bg-card p-6">
-        <h2 className="text-lg font-semibold text-heading">Appointments</h2>
-        <p className="mt-2 text-ink">Online booking will be available here soon.</p>
-      </section>
+      <NextAppointment canBook={me.user.emailVerified} />
     </div>
   );
 }

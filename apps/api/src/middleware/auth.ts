@@ -56,6 +56,18 @@ export function authorize(permission: Permission): RequestHandler[] {
   ];
 }
 
+/** Like `authorize`, but any one of the permissions is enough. */
+export function authorizeAny(...permissions: Permission[]): RequestHandler[] {
+  return [
+    requireAuth(),
+    (req, _res, next) => {
+      const role = req.auth!.user.role;
+      if (!permissions.some((p) => hasPermission(role, p))) return next(AppError.forbidden());
+      next();
+    },
+  ];
+}
+
 /** Narrowing helper for handlers that run after requireAuth/authorize. */
 export function authOf(req: Request): AuthContext {
   if (!req.auth) throw AppError.unauthenticated();

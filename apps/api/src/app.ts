@@ -15,6 +15,8 @@ import { loadSession } from './middleware/auth.js';
 import { csrfProtection } from './middleware/csrf.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { rateLimit } from './middleware/rateLimit.js';
+import { appointmentRoutes, appointmentTypeRoutes } from './modules/appointments/routes.js';
+import { AppointmentService } from './modules/appointments/service.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { AuthService, type AuthLimits } from './modules/auth/service.js';
 import { SessionStore } from './modules/auth/sessions.js';
@@ -74,6 +76,12 @@ export function createApp(deps: AppDeps): Express {
   });
   const patientService = new PatientService({ prisma, cipher });
   const doctorService = new DoctorService({ prisma, timezone: config.clinicTimezone });
+  const appointmentService = new AppointmentService({
+    prisma,
+    cipher,
+    doctors: doctorService,
+    timezone: config.clinicTimezone,
+  });
 
   const app = express();
 
@@ -145,6 +153,8 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/clinic', clinicRoutes(prisma, config.clinicTimezone));
   app.use('/api/patients', patientRoutes({ service: patientService }));
   app.use('/api/doctors', doctorRoutes({ service: doctorService }));
+  app.use('/api/appointments', appointmentRoutes({ service: appointmentService }));
+  app.use('/api/appointment-types', appointmentTypeRoutes({ service: appointmentService }));
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);

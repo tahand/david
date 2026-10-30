@@ -9,4 +9,5 @@ export const aad = {
   patientEmergencyContact: (patientId: string) => `patients.emergency_contact:${patientId}`,
   patientMedicalSummary: (patientId: string) => `patients.medical_summary:${patientId}`,
   appointmentReason: (appointmentId: string) => `appointments.reason_for_visit:${appointmentId}`,
+  clinicalNoteBody: (noteId: string) => `clinical_notes.body:${noteId}`,
 };
