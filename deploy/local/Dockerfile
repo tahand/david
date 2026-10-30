@@ -6,7 +6,7 @@
 
 # Supported releases only (Cyber Essentials: security update management).
 # Dependabot (.github/dependabot.yml) proposes updates to these tags.
-FROM node:24-bookworm-slim AS build
+FROM node:25-bookworm-slim AS build
 # Prisma's query engine needs OpenSSL; argon2 compiles with node-gyp when no
 # prebuilt binary matches, which needs Python and a C++ toolchain.
 RUN apt-get update \
