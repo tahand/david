@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { PatientRecord } from '@clinic/shared';
+import { appointmentKeys, appointmentsApi } from '../../api/appointments';
 import { ApiError } from '../../api/client';
 import { patientKeys, patientsApi } from '../../api/patients';
 import { useAuth } from '../../auth/AuthProvider';
+import { AppointmentList, isUpcoming } from '../../components/appointments/AppointmentList';
 import { Alert, Button, Spinner } from '../../components/forms';
 import { PageHeading, useClinicInfo } from '../../components/layouts';
 import { Section } from '../../components/patient/DetailList';
@@ -26,8 +28,19 @@ export function PatientDetailPage() {
   const clinic = useClinicInfo();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<Editing>(null);
+  const state = location.state as {
+    created?: boolean;
+    booked?: string;
+    rescheduled?: string;
+  } | null;
   const [message, setMessage] = useState<string | null>(
-    (location.state as { created?: boolean } | null)?.created ? 'Patient created.' : null,
+    state?.created
+      ? 'Patient created.'
+      : state?.booked
+        ? 'Appointment booked.'
+        : state?.rescheduled
+          ? 'Appointment moved.'
+          : null,
   );
   const query = useQuery({ queryKey: patientKeys.detail(id), queryFn: () => patientsApi.get(id) });
 
@@ -131,9 +144,74 @@ export function PatientDetailPage() {
         )}
       </Section>
 
-      <Section title="Appointments">
-        <p className="text-ink">Appointment history will appear here.</p>
-      </Section>
+      <PatientAppointments
+        patientId={patient.id}
+        canBook={canEditDetails}
+        isDoctor={role === 'doctor'}
+        onChanged={setMessage}
+      />
     </div>
+  );
+}
+
+/** Upcoming and past appointments; doctors see only their own (the API scopes the list). */
+function PatientAppointments({
+  patientId,
+  canBook,
+  isDoctor,
+  onChanged,
+}: {
+  patientId: string;
+  canBook: boolean;
+  isDoctor: boolean;
+  onChanged: (message: string) => void;
+}) {
+  const queryClient = useQueryClient();
+  const query = useQuery({
+    queryKey: appointmentKeys.list({ patientId }),
+    queryFn: () => appointmentsApi.list({ patientId }),
+  });
+  const changed = () => {
+    onChanged('Appointment cancelled.');
+    void queryClient.invalidateQueries({ queryKey: appointmentKeys.all });
+  };
+  const now = Date.now();
+  const all = query.data?.appointments ?? [];
+
+  return (
+    <Section
+      title={isDoctor ? 'Appointments with you' : 'Appointments'}
+      action={
+        canBook && (
+          <Link
+            to={`/book?patient=${encodeURIComponent(patientId)}`}
+            className="inline-flex min-h-11 items-center rounded-md bg-brand px-4 font-medium text-on-brand hover:bg-brand-hover"
+          >
+            Book appointment
+          </Link>
+        )
+      }
+    >
+      {query.isPending ? (
+        <Spinner label="Loading appointments" />
+      ) : query.isError ? (
+        <p className="text-ink">We couldn't load appointments.</p>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <h3 className="font-semibold text-heading">Upcoming</h3>
+          <AppointmentList
+            appointments={all.filter((a) => isUpcoming(a, now))}
+            empty="No upcoming appointments."
+            onChanged={changed}
+          />
+          <h3 className="font-semibold text-heading">History</h3>
+          <AppointmentList
+            appointments={all.filter((a) => !isUpcoming(a, now)).reverse()}
+            empty="No past appointments."
+            onChanged={changed}
+          />
+        </div>
+      )}
+    </Section>
   );
 }

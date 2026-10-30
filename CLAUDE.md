@@ -43,7 +43,15 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
 - Guards: `RequireAuth` (roles, `allowMfaEnrolment`), `PublicOnly`, `HomeRedirect`. Role homes in `HOME_BY_ROLE`; post-login destination via `destinationFor()` (validates `next` with `safeNext`).
 - Forms: React Hook Form + shared Zod schemas; map server `VALIDATION_ERROR` with `applyServerErrors`.
 - Components in `components/forms.tsx` are labelled and wire errors via `aria-describedby`; keep new inputs on them.
-- Tests: `src/test/mockApi.tsx` (`mockApi`, `renderApp`, `meFor`) renders the real route tree in StrictMode with a stubbed `fetch`.
+- Tests: `src/test/mockApi.tsx` (`mockApi`, `renderApp`, `meFor`) renders the real route tree in StrictMode with a stubbed `fetch`. Route keys include the query string exactly as the page builds it. `src/test/fixtures.ts` has a full `patientRecord()`.
+
+## Appointments (phase 7)
+
+- `modules/appointments/service.ts`. Scope: patients see their own appointments, doctors their own schedule, reception and admins everything. Anything out of scope is a 404, audited as `appointment.access_denied`. Patients and reception/admin book, reschedule and cancel (`authorizeAny`); doctors don't.
+- Booking and rescheduling check that the start is one of `DoctorService.availableSlots()` for that day. That check is only a friendly first pass: the `no_overlap` constraint is what prevents double booking, and `isOverlapViolation` maps it to 409 `SLOT_UNAVAILABLE`. Writes lock the patient row (`SELECT … FOR UPDATE`) so the upcoming-appointment limit and patient overlap check hold under concurrency.
+- Status changes follow `STATUS_RULES` in `packages/shared/src/appointments.ts` (roles, from-statuses, timing). The UI's `availableStatusUpdates` mirrors it. Every change writes an `appointment_events` row, and updates are guarded by the current status (a concurrent change gets a 409).
+- Patients can't change an appointment within `patientChangeCutoffHours` of its start (409 `CHANGE_WINDOW_CLOSED`). `canChange` on each DTO tells the UI what the caller may do. Patients must have a verified email to book (403 `EMAIL_NOT_VERIFIED`). The upcoming-appointment cap applies to patient self-booking only.
+- Clinical notes: doctors only, on their own appointments. They are encrypted with `aad.clinicalNoteBody`, and corrections are new rows with `amendsNoteId` on the same appointment.
 
 ## Patients & audit (phase 5)
 

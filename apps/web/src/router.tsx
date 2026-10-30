@@ -7,9 +7,11 @@ import { SessionTimeout } from './auth/SessionTimeout';
 import { AppShell } from './components/layouts';
 import { useClinicTheme } from './lib/theme';
 import { MfaSetupPage } from './pages/account/MfaSetupPage';
+import { BookPage } from './pages/BookPage';
 import { SecurityPage } from './pages/account/SecurityPage';
 import { ForbiddenPage } from './pages/ForbiddenPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { AppointmentsPage } from './pages/patient/AppointmentsPage';
 import { DashboardPage } from './pages/patient/DashboardPage';
 import { ProfilePage } from './pages/patient/ProfilePage';
 import { PrivacyPage, TermsPage } from './pages/public/LegalPages';
@@ -17,11 +19,14 @@ import { LoginPage } from './pages/public/LoginPage';
 import { MfaPage } from './pages/public/MfaPage';
 import { RegisterPage } from './pages/public/RegisterPage';
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from './pages/public/TokenPages';
+import { ReschedulePage } from './pages/ReschedulePage';
 import { AvailabilityPage } from './pages/staff/AvailabilityPage';
+import { FrontDeskPage } from './pages/staff/FrontDeskPage';
 import { NewPatientPage } from './pages/staff/NewPatientPage';
 import { PatientDetailPage } from './pages/staff/PatientDetailPage';
 import { PatientsPage } from './pages/staff/PatientsPage';
 import { PlaceholderPage } from './pages/staff/PlaceholderPage';
+import { SchedulePage } from './pages/staff/SchedulePage';
 
 /** Wires the API client's global 401/403 handling to navigation (SPEC §10). */
 function GlobalErrorHandling() {
@@ -91,6 +96,14 @@ export const routes: RouteObject[] = [
             children: [
               { path: '/dashboard', element: <DashboardPage /> },
               { path: '/profile', element: <ProfilePage /> },
+              { path: '/appointments', element: <AppointmentsPage /> },
+            ],
+          },
+          {
+            element: <RequireAuth roles={['patient', 'receptionist', 'admin']} />,
+            children: [
+              { path: '/book', element: <BookPage /> },
+              { path: '/appointments/:id/reschedule', element: <ReschedulePage /> },
             ],
           },
           {
@@ -110,18 +123,11 @@ export const routes: RouteObject[] = [
           },
           {
             element: <RequireAuth roles={['doctor']} />,
-            children: [
-              { path: '/schedule', element: <PlaceholderPage title="Schedule" phase="phase 7" /> },
-            ],
+            children: [{ path: '/schedule', element: <SchedulePage /> }],
           },
           {
             element: <RequireAuth roles={['receptionist', 'admin']} />,
-            children: [
-              {
-                path: '/front-desk',
-                element: <PlaceholderPage title="Front desk" phase="phase 7" />,
-              },
-            ],
+            children: [{ path: '/front-desk', element: <FrontDeskPage /> }],
           },
           {
             element: <RequireAuth roles={['admin']} />,

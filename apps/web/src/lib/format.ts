@@ -57,3 +57,19 @@ export const fullName = (p: {
   p.preferredName
     ? `${p.firstName} (${p.preferredName}) ${p.lastName}`
     : `${p.firstName} ${p.lastName}`;
+
+/** Today's date ("YYYY-MM-DD") in the clinic's timezone, whatever the browser's zone. */
+export function clinicToday(timeZone: string, now: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+}
+
+/** "2026-11-02T09:00" → "Mon 2 Nov 2026 at 09:00". */
+export function formatLocalDateTime(local: string): string {
+  const [date, time] = local.split('T') as [string, string];
+  return `${formatDayDate(date)} at ${time}`;
+}

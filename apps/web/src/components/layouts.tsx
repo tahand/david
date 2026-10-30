@@ -43,6 +43,8 @@ export function AuthLayout({ title, children }: { title: string; children: React
 const NAV: Record<Role, { to: string; label: string }[]> = {
   patient: [
     { to: '/dashboard', label: 'Dashboard' },
+    { to: '/appointments', label: 'Appointments' },
+    { to: '/book', label: 'Book' },
     { to: '/profile', label: 'Profile' },
     { to: '/account/security', label: 'Security' },
   ],
@@ -59,6 +61,7 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
   ],
   admin: [
     { to: '/admin/users', label: 'Users' },
+    { to: '/front-desk', label: 'Front desk' },
     { to: '/patients', label: 'Patients' },
     { to: '/availability', label: 'Availability' },
     { to: '/account/security', label: 'Security' },
