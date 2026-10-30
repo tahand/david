@@ -17,6 +17,7 @@ import { rateLimit } from './middleware/rateLimit.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { AuthService, type AuthLimits } from './modules/auth/service.js';
 import { SessionStore } from './modules/auth/sessions.js';
+import { clinicRoutes } from './modules/clinic/routes.js';
 import { healthRoutes, type DbCheck } from './modules/health/routes.js';
 
 export interface RateLimitSettings {
@@ -132,6 +133,8 @@ export function createApp(deps: AppDeps): Express {
       }),
     }),
   );
+
+  app.use('/api/clinic', clinicRoutes(prisma));
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);
