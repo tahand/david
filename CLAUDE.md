@@ -63,7 +63,11 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
 - Config: add every new env var to `config.ts` (Zod, fail fast) and `.env.example`.
 - Logging: `pino` with the redaction list in `lib/logger.ts`. Never log passwords, tokens, session IDs or medical data; extend `SENSITIVE_KEYS` when adding such fields.
 - DB: Prisma only; raw SQL only via the `$queryRaw` tagged template.
-- Dates: UTC in the DB, `date-fns` + `date-fns-tz` for clinic-timezone logic; never server local time.
+- Dates: UTC in the DB, `date-fns` + `date-fns-tz` for clinic-timezone logic; never server local time. Use the helpers in `apps/api/src/lib/clinicTime.ts`:
+  - `zonedToUtc` resolves clocks-forward gaps forwards and repeated hours to their first occurrence; `fromZonedTime` does neither safely.
+  - `addCalendarDays` instead of `date-fns` `addDays`, which uses the server's local zone and loops forever across a DST change on a UK machine.
+  - Calendar dates and wall-clock times travel as strings (`2026-11-03`, `09:00`, `2026-11-03T09:00`); instants as UTC ISO strings.
+- Slots: `lib/slots.ts` is pure. Any change needs unit tests, including DST cases for Europe/London and America/New_York.
 - Frontend: no `dangerouslySetInnerHTML`, no `localStorage`/`sessionStorage` (ESLint enforces both).
 - Mobile-friendly is a requirement for every screen. Build mobile-first: the base Tailwind classes target a 360px-wide phone, and `sm:`/`md:` add the wider layout. No horizontal page scrolling. Touch targets are at least 44px (`min-h-11`), and inputs use `text-base` so iOS doesn't zoom. Use one set of markup that reflows (stacked cards on phones, grid or table from `sm` up), not separate mobile and desktop copies. Check new pages at phone width (DevTools device mode) before finishing.
 - Dependencies: keep `npm audit` clean (high/critical blocks). `overrides` in root `package.json` pins `deepmerge-ts` ≥ 8 for Prisma 6.

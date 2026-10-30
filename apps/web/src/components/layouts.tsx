@@ -49,6 +49,7 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
   doctor: [
     { to: '/schedule', label: 'Schedule' },
     { to: '/patients', label: 'Patients' },
+    { to: '/availability', label: 'Availability' },
     { to: '/account/security', label: 'Security' },
   ],
   receptionist: [
@@ -59,6 +60,7 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
   admin: [
     { to: '/admin/users', label: 'Users' },
     { to: '/patients', label: 'Patients' },
+    { to: '/availability', label: 'Availability' },
     { to: '/account/security', label: 'Security' },
   ],
 };

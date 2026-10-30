@@ -49,4 +49,6 @@ export interface PublicClinicInfo {
   clinicAddress: string;
   consentVersion: string;
   healthIdLabel: string;
+  /** IANA timezone all clinic times are shown in (CLINIC_TIMEZONE). */
+  timezone: string;
 }

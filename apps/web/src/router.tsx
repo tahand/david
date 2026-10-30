@@ -16,6 +16,7 @@ import { LoginPage } from './pages/public/LoginPage';
 import { MfaPage } from './pages/public/MfaPage';
 import { RegisterPage } from './pages/public/RegisterPage';
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from './pages/public/TokenPages';
+import { AvailabilityPage } from './pages/staff/AvailabilityPage';
 import { NewPatientPage } from './pages/staff/NewPatientPage';
 import { PatientDetailPage } from './pages/staff/PatientDetailPage';
 import { PatientsPage } from './pages/staff/PatientsPage';
@@ -95,6 +96,10 @@ export const routes: RouteObject[] = [
           {
             element: <RequireAuth roles={['receptionist', 'admin']} />,
             children: [{ path: '/patients/new', element: <NewPatientPage /> }],
+          },
+          {
+            element: <RequireAuth roles={['doctor', 'admin']} />,
+            children: [{ path: '/availability', element: <AvailabilityPage /> }],
           },
           {
             element: <RequireAuth roles={['doctor']} />,

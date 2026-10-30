@@ -48,6 +48,7 @@ export function mockApi(table: Record<string, Handler>) {
         clinicAddress: '1 Test St',
         consentVersion: 'v-test',
         healthIdLabel: 'NHS number',
+        timezone: 'Europe/London',
       },
     },
     ...table,
