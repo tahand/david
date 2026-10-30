@@ -76,6 +76,36 @@ export function isOverlapViolation(err: unknown): boolean {
   return err.message.includes('23P01') || err.message.includes('no_overlap');
 }
 
+const MAX_BOOKING_ATTEMPTS = 3;
+
+/**
+ * Bookings for one doctor queue on lockDoctorSchedule, so allow for waiting
+ * behind a few others; Prisma's default interactive timeout is 5 s.
+ */
+const BOOKING_TX_OPTIONS = { maxWait: 5_000, timeout: 15_000 };
+
+/**
+ * A deadlock or write conflict that aborted the whole transaction, so it is
+ * safe to run again. Prisma reports these as P2034; raw errors carry the
+ * Postgres SQLSTATE (40P01 deadlock, 40001 serialization failure). P2028 is an
+ * interactive transaction that timed out waiting for the lock; it was rolled back.
+ */
+export function isRetryableConflict(err: unknown): boolean {
+  if (
+    err instanceof Prisma.PrismaClientKnownRequestError &&
+    ['P2034', 'P2028'].includes(err.code)
+  ) {
+    return true;
+  }
+  if (
+    err instanceof Prisma.PrismaClientKnownRequestError ||
+    err instanceof Prisma.PrismaClientUnknownRequestError
+  ) {
+    return /40P01|40001|deadlock detected/i.test(err.message);
+  }
+  return false;
+}
+
 export interface AppointmentServiceDeps {
   prisma: PrismaClient;
   cipher: FieldCipher;
@@ -221,6 +251,7 @@ export class AppointmentService {
     await this.withOverlapGuard(() =>
       this.prisma.$transaction(async (tx) => {
         await this.lockPatient(tx, patientId);
+        await this.lockDoctorSchedule(tx, doctor.id);
         await this.assertPatientFree(tx, patientId, startsAt, endsAt);
         if (forPatient) {
           const upcoming = await tx.appointment.count({
@@ -269,7 +300,7 @@ export class AppointmentService {
           },
           tx,
         );
-      }),
+      }, BOOKING_TX_OPTIONS),
     );
     this.deps.notifier?.notifyInBackground('booked', id);
     return this.dtoById(actor, id, settings);
@@ -304,6 +335,7 @@ export class AppointmentService {
     await this.withOverlapGuard(() =>
       this.prisma.$transaction(async (tx) => {
         await this.lockPatient(tx, row.patientId);
+        await this.lockDoctorSchedule(tx, doctor.id);
         await this.assertPatientFree(tx, row.patientId, startsAt, endsAt, row.id);
         const { count } = await tx.appointment.updateMany({
           where: { id: row.id, status: row.status, startsAt: row.startsAt },
@@ -333,7 +365,7 @@ export class AppointmentService {
           },
           tx,
         );
-      }),
+      }, BOOKING_TX_OPTIONS),
     );
     this.deps.notifier?.notifyInBackground('rescheduled', row.id);
     return this.dtoById(actor, row.id, settings);
@@ -614,6 +646,18 @@ export class AppointmentService {
     await tx.$queryRaw`SELECT id FROM patients WHERE id = ${patientId}::uuid FOR UPDATE`;
   }
 
+  /**
+   * Queues concurrent bookings for the same doctor. Without it, two transactions
+   * inserting into the no_overlap exclusion constraint at the same instant can
+   * deadlock (measured: about 1 in 25 under contention) instead of one getting
+   * a clean violation. Always taken after lockPatient, so locks are ordered
+   * patient → doctor and can't deadlock with each other. Released at commit.
+   */
+  private async lockDoctorSchedule(tx: Tx, doctorId: string): Promise<void> {
+    // $executeRaw: the function returns void, which $queryRaw cannot read.
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${doctorId}::text, 0))`;
+  }
+
   private async assertPatientFree(
     tx: Tx,
     patientId: string,
@@ -633,12 +677,23 @@ export class AppointmentService {
     if (clash) throw AppError.conflict('The patient already has an appointment at this time.');
   }
 
+  /**
+   * Runs a booking transaction, mapping the no_overlap violation to 409.
+   * Two transactions inserting the same slot at the same instant can deadlock
+   * on the exclusion constraint instead of one getting the violation; Postgres
+   * aborts one, so retry it: by then the winner has committed and the retry
+   * gets a clean no_overlap violation (or, if the winner rolled back, books).
+   */
   private async withOverlapGuard(run: () => Promise<void>): Promise<void> {
-    try {
-      await run();
-    } catch (err) {
-      if (isOverlapViolation(err)) throw slotUnavailable();
-      throw err;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await run();
+        return;
+      } catch (err) {
+        if (isOverlapViolation(err)) throw slotUnavailable();
+        if (isRetryableConflict(err) && attempt < MAX_BOOKING_ATTEMPTS) continue;
+        throw err;
+      }
     }
   }
 
