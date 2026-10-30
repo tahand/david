@@ -20,3 +20,5 @@ apps/e2e/docs/.raw/
 
 # Markdown docs stay local (not pushed to GitHub)
 *.md
+# ...except the repository front page.
+!/README.md
