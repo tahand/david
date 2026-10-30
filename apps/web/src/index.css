@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-brand-600: #0f5c8c;
+  --color-brand-700: #0b4a72;
+}
+
+/* Visible focus for keyboard users (WCAG 2.1 AA). */
+:focus-visible {
+  outline: 3px solid var(--color-brand-600);
+  outline-offset: 2px;
+}
