@@ -1,4 +1,6 @@
 # Local development only. Production uses PostgreSQL installed directly on the Droplet.
+# On first start, deploy/sql/dev-init.sh creates app_migrator/app_user and the
+# clinic + clinic_test databases. Reset with: docker compose -f docker-compose.dev.yml down -v
 services:
   postgres:
     image: postgres:16
@@ -6,11 +8,13 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: clinic
     ports:
-      - '127.0.0.1:5432:5432'
+      # Host port 5433 avoids clashing with a locally installed Postgres on 5432.
+      - '127.0.0.1:5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./deploy/sql/bootstrap.sql:/bootstrap/bootstrap.sql:ro
+      - ./deploy/sql/dev-init.sh:/docker-entrypoint-initdb.d/10-dev-init.sh:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres -d clinic']
       interval: 5s

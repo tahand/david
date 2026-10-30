@@ -5,6 +5,7 @@ export default defineConfig({
   ssr: { resolve: { conditions: ['@clinic/source'] } },
   test: {
     include: ['src/**/*.test.ts'],
+    exclude: ['src/**/*.db.test.ts', 'node_modules/**'],
     environment: 'node',
   },
 });
