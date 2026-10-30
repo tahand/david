@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the clinic database backup nightly
+
+[Timer]
+# 02:15 server time (UTC), before the API's 03:30 clinic-time retention job.
+OnCalendar=*-*-* 02:15:00
+RandomizedDelaySec=10min
+# Catch up after downtime.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

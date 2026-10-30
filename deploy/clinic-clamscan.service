@@ -1,0 +1,17 @@
+# Scheduled malware scan (Cyber Essentials: malware protection).
+# Started by clinic-clamscan.timer. Infected files are reported to the
+# journal and listed in /var/log/clinic-clamscan.log; nothing is deleted.
+[Unit]
+Description=ClamAV scan of the clinic server
+After=clamav-freshclam.service
+
+[Service]
+Type=oneshot
+Nice=19
+IOSchedulingClass=idle
+# Exit code 1 means "virus found": report it as a failed unit so it is noticed.
+ExecStart=/usr/bin/clamscan --recursive --infected --suppress-ok-results \
+  --log=/var/log/clinic-clamscan.log \
+  --exclude-dir=^/proc --exclude-dir=^/sys --exclude-dir=^/dev --exclude-dir=^/run \
+  --exclude-dir=^/mnt/pgdata \
+  /opt/clinic-app /etc /home /root /tmp /var/tmp /var/www /usr/local

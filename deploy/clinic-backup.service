@@ -1,0 +1,16 @@
+# Nightly encrypted database backup (SPEC §12.4). Started by clinic-backup.timer.
+[Unit]
+Description=Clinic encrypted database backup
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/clinic-app/deploy/backup.sh
+# Runs as root to read the backup config and hand pg_dump to the postgres user;
+# the dump itself never touches disk unencrypted outside a 0700 directory.
+Nice=10
+IOSchedulingClass=idle
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectHome=true

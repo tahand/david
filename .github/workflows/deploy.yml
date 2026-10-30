@@ -1,0 +1,57 @@
+# Optional: deploy main to the Droplet after CI passes (SPEC §12.5).
+#
+# Off until you opt in. To enable:
+#   1. On the server, the deploy SSH user must be able to run
+#      `sudo /opt/clinic-app/deploy/deploy.sh` (provision.sh's ADMIN_USER can).
+#      A dedicated user restricted to that one command is better:
+#        clinicci ALL=(root) NOPASSWD: /opt/clinic-app/deploy/deploy.sh
+#   2. Repository → Settings → Environments → "production": add required
+#      reviewers if deploys should be approved, and these secrets:
+#        DEPLOY_HOST         the server's hostname or IP
+#        DEPLOY_USER         the SSH user
+#        DEPLOY_SSH_KEY      that user's private key (ed25519, no passphrase)
+#        DEPLOY_KNOWN_HOSTS  output of `ssh-keyscan -t ed25519 <host>`
+#   3. Repository → Settings → Variables: DEPLOY_ENABLED = true
+#   4. The server's firewall (UFW and the Cloud Firewall) must allow SSH from
+#      GitHub's runners, which is a wide range. Prefer a self-hosted runner, or
+#      deploy by hand if SSH is restricted to admin IPs.
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      vars.DEPLOY_ENABLED == 'true' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-24.04
+    environment: production
+    timeout-minutes: 30
+    steps:
+      - name: Deploy the commit CI just tested
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER_NAME: ${{ secrets.DEPLOY_USER }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+          ssh -o StrictHostKeyChecking=yes "$USER_NAME@$HOST" \
+            "sudo /opt/clinic-app/deploy/deploy.sh $SHA"
+          rm -f ~/.ssh/id_ed25519

@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CONTENT_SECURITY_POLICY,
   DOCUMENT_SECURITY_HEADERS,
+  HSTS_HEADER,
   PERMISSIONS_POLICY,
   REFERRER_POLICY,
 } from '@clinic/shared';
@@ -50,6 +51,27 @@ describe('security headers', () => {
         const values = headerValues(conf, header);
         expect(values.length, `${header} is set`).toBeGreaterThan(0);
         for (const v of values) expect(v, header).toBe(value);
+      }
+
+      // Nginx drops inherited add_header lines in any location that sets its
+      // own, so every location serving the app must repeat the full set.
+      const tls = /listen\s+(\[::\]:)?443\s+ssl/.test(conf);
+      const locations = conf.split(/\n\s*location\s+/).slice(1);
+      for (const block of locations) {
+        const body = block.slice(0, block.indexOf('\n  }'));
+        const name = block.split(/\s/)[0];
+        if (!/add_header/.test(body)) continue;
+        if (tls) {
+          expect(headerValues(body, 'Strict-Transport-Security'), `HSTS in ${name}`).toEqual([
+            HSTS_HEADER,
+          ]);
+        }
+        // The API sends its own CSP; static and SPA locations must send ours.
+        if (!name?.startsWith('/api')) {
+          for (const [header] of expected) {
+            expect(headerValues(body, header).length, `${header} in location ${name}`).toBe(1);
+          }
+        }
       }
     },
   );

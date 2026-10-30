@@ -1,0 +1,84 @@
+# Lint, type-check, audit, unit/API/DB tests and Playwright end-to-end tests
+# on every push and pull request (SPEC §11: npm audit in CI).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      # Same ports as docker-compose.dev.yml, so tests use their defaults.
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s
+          --health-timeout 5s --health-retries 20
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports: ['1025:1025', '8025:8025']
+
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: '5433'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Create database roles and databases (as deploy/sql/dev-init.sh does)
+        run: |
+          for db in clinic clinic_test; do
+            psql -v ON_ERROR_STOP=1 -d postgres -v db_name="$db" \
+              -v migrator_password=app_migrator_dev -v app_password=app_user_dev \
+              -f deploy/sql/bootstrap.sql
+          done
+          psql -v ON_ERROR_STOP=1 -d postgres -c "ALTER ROLE app_migrator CREATEDB"
+
+      - run: npm ci
+
+      - name: Lint, format, type-check, audit, unit, API and DB tests
+        run: npm run check
+
+      - name: Install Playwright's Chromium
+        run: npx playwright install --with-deps chromium
+        working-directory: apps/e2e
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/e2e/playwright-report
+          retention-days: 7
+
+  shellcheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shellcheck the deployment scripts
+        run: shellcheck -x -S style deploy/*.sh deploy/sql/*.sh

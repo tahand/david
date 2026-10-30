@@ -1,0 +1,58 @@
+# Clinic API (SPEC §12). Installed by provision.sh to
+# /etc/systemd/system/clinic-api.service.
+#
+# Runs as the unprivileged clinicapp user, which can read the release in
+# /opt/clinic-app but not change it. Secrets come from /etc/clinic-app/.env
+# (mode 600). The app writes nothing to disk; logs go to the journal.
+
+[Unit]
+Description=Clinic appointments API
+Documentation=file:///opt/clinic-app/docs/DEPLOYMENT.md
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=clinicapp
+Group=clinicapp
+WorkingDirectory=/opt/clinic-app
+EnvironmentFile=/etc/clinic-app/.env
+ExecStart=/usr/bin/node apps/api/dist/index.js
+Restart=on-failure
+RestartSec=5s
+# index.ts drains connections on SIGTERM, then exits within 10 s.
+KillSignal=SIGTERM
+TimeoutStopSec=15s
+
+# --- Sandboxing (SPEC §11 requires the first three).
+NoNewPrivileges=true
+ProtectSystem=strict
+PrivateTmp=true
+ProtectHome=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+ProcSubset=pid
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RemoveIPC=true
+UMask=0077
+CapabilityBoundingSet=
+AmbientCapabilities=
+# TCP to Postgres and SMTP, and the Postgres/journald unix sockets only.
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+# Not MemoryDenyWriteExecute: V8's JIT needs writable+executable memory.
+
+[Install]
+WantedBy=multi-user.target
