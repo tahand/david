@@ -23,7 +23,7 @@ services:
 
   # Catches all outgoing dev email. Web UI: http://localhost:8025
   mailpit:
-    image: axllent/mailpit:v1.27
+    image: axllent/mailpit:v1.32
     restart: unless-stopped
     ports:
       - '127.0.0.1:1025:1025'
