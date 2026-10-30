@@ -48,14 +48,14 @@ export function DashboardPage() {
           <p>
             Turn on two-step verification so only you can sign in, even if your password is stolen.
           </p>
-          <Link to="/mfa/setup" className="mt-2 inline-block font-medium text-brand-700 underline">
+          <Link to="/mfa/setup" className="mt-2 inline-block font-medium text-link underline">
             Set up two-step verification
           </Link>
         </Alert>
       )}
-      <section className="rounded-lg border border-slate-200 bg-white p-6">
-        <h2 className="text-lg font-semibold text-slate-900">Appointments</h2>
-        <p className="mt-2 text-slate-800">Online booking will be available here soon.</p>
+      <section className="rounded-lg border border-line bg-card p-6">
+        <h2 className="text-lg font-semibold text-heading">Appointments</h2>
+        <p className="mt-2 text-ink">Online booking will be available here soon.</p>
       </section>
     </div>
   );

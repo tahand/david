@@ -10,8 +10,8 @@ export function DetailList({ items }: { items: DetailItem[] }) {
     <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
       {items.map(([label, value]) => (
         <div key={label}>
-          <dt className="text-sm font-medium text-slate-700">{label}</dt>
-          <dd className={isEmpty(value) ? 'text-slate-600 italic' : 'text-slate-900'}>
+          <dt className="text-sm font-medium text-ink-muted">{label}</dt>
+          <dd className={isEmpty(value) ? 'text-ink-muted italic' : 'text-ink'}>
             {isEmpty(value) ? 'Not recorded' : value}
           </dd>
         </div>
@@ -30,9 +30,9 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4 sm:p-6">
+    <section className="rounded-lg border border-line bg-card p-4 sm:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+        <h2 className="text-lg font-semibold text-heading">{title}</h2>
         {action}
       </div>
       {children}

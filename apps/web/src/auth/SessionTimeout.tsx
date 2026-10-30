@@ -57,7 +57,7 @@ export function SessionTimeout() {
 
   return (
     <Modal title="Are you still there?">
-      <p className="text-slate-800">
+      <p className="text-ink">
         For your security you'll be signed out in{' '}
         <strong aria-live="polite">{formatRemaining(deadline - now)}</strong> because of inactivity.
       </p>

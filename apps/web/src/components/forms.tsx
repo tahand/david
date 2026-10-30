@@ -28,12 +28,12 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const BUTTON_STYLES: Record<NonNullable<ButtonProps['variant']>, string> = {
   primary:
-    'bg-brand-700 text-white hover:bg-brand-600 disabled:bg-slate-400 px-4 py-2.5 rounded-md font-medium',
+    'bg-brand text-on-brand hover:bg-brand-hover disabled:bg-slate-400 px-4 py-2.5 rounded-md font-medium',
   secondary:
-    'border border-slate-400 bg-white text-slate-900 hover:bg-slate-50 disabled:text-slate-500 px-4 py-2.5 rounded-md font-medium',
+    'border border-line-strong bg-card text-ink hover:bg-page disabled:text-slate-500 px-4 py-2.5 rounded-md font-medium',
   danger:
     'bg-red-700 text-white hover:bg-red-800 disabled:bg-slate-400 px-4 py-2.5 rounded-md font-medium',
-  link: 'text-brand-700 underline underline-offset-2 hover:text-brand-600 p-0',
+  link: 'text-link underline underline-offset-2 hover:text-link-hover p-0',
 };
 
 export function Button({
@@ -71,7 +71,7 @@ export function Alert({
   const styles = {
     error: 'border-red-700 bg-red-50 text-red-900',
     success: 'border-green-700 bg-green-50 text-green-900',
-    info: 'border-brand-700 bg-sky-50 text-slate-900',
+    info: 'border-link bg-accent-soft text-ink',
     warning: 'border-amber-700 bg-amber-50 text-amber-950',
   }[tone];
   return (
@@ -101,11 +101,11 @@ export const TextField = forwardRef<HTMLInputElement, FieldProps>(function TextF
   const errorId = error ? `${inputId}-error` : undefined;
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm font-medium text-slate-900">
+      <label htmlFor={inputId} className="text-sm font-medium text-ink">
         {label}
       </label>
       {hint && (
-        <p id={hintId} className="text-sm text-slate-700">
+        <p id={hintId} className="text-sm text-ink-muted">
           {hint}
         </p>
       )}
@@ -114,8 +114,8 @@ export const TextField = forwardRef<HTMLInputElement, FieldProps>(function TextF
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}
-        className={`rounded-md border px-3 py-2 text-base text-slate-900 ${
-          error ? 'border-red-700' : 'border-slate-500'
+        className={`rounded-md border px-3 py-2 text-base text-ink ${
+          error ? 'border-red-700' : 'border-line-strong'
         } ${className}`}
         {...rest}
       />
@@ -147,7 +147,7 @@ export const PasswordField = forwardRef<HTMLInputElement, Omit<FieldProps, 'type
           onClick={() => setVisible((v) => !v)}
           aria-controls={id}
           aria-pressed={visible}
-          className="absolute right-2 top-[1.85rem] rounded px-2 py-1 text-sm font-medium text-brand-700 underline"
+          className="absolute right-2 top-[1.85rem] rounded px-2 py-1 text-sm font-medium text-link underline"
         >
           {visible ? 'Hide' : 'Show'}
           <span className="sr-only"> password</span>
@@ -172,7 +172,7 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectProps>(function S
   const errorId = error ? `${inputId}-error` : undefined;
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm font-medium text-slate-900">
+      <label htmlFor={inputId} className="text-sm font-medium text-ink">
         {label}
       </label>
       <select
@@ -180,8 +180,8 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectProps>(function S
         id={inputId}
         aria-invalid={error ? true : undefined}
         aria-describedby={errorId}
-        className={`rounded-md border bg-white px-3 py-2 text-base text-slate-900 ${
-          error ? 'border-red-700' : 'border-slate-500'
+        className={`rounded-md border bg-card px-3 py-2 text-base text-ink ${
+          error ? 'border-red-700' : 'border-line-strong'
         } ${className}`}
         {...rest}
       >
@@ -214,7 +214,7 @@ export const TextAreaField = forwardRef<HTMLTextAreaElement, TextAreaProps>(func
   const errorId = error ? `${inputId}-error` : undefined;
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={inputId} className="text-sm font-medium text-slate-900">
+      <label htmlFor={inputId} className="text-sm font-medium text-ink">
         {label}
       </label>
       <textarea
@@ -223,8 +223,8 @@ export const TextAreaField = forwardRef<HTMLTextAreaElement, TextAreaProps>(func
         rows={3}
         aria-invalid={error ? true : undefined}
         aria-describedby={errorId}
-        className={`rounded-md border px-3 py-2 text-base text-slate-900 ${
-          error ? 'border-red-700' : 'border-slate-500'
+        className={`rounded-md border px-3 py-2 text-base text-ink ${
+          error ? 'border-red-700' : 'border-line-strong'
         } ${className}`}
         {...rest}
       />
@@ -256,7 +256,7 @@ export const Checkbox = forwardRef<
           className="mt-1 h-4 w-4"
           {...rest}
         />
-        <label htmlFor={inputId} className="text-sm text-slate-900">
+        <label htmlFor={inputId} className="text-sm text-ink">
           {label}
         </label>
       </div>

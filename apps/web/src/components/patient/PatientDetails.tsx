@@ -44,7 +44,7 @@ export function PatientDetailsView({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h3 className="mb-3 font-semibold text-slate-900">Personal</h3>
+        <h3 className="mb-3 font-semibold text-ink">Personal</h3>
         <DetailList
           items={[
             ['Name', [p.title, p.firstName, p.middleNames, p.lastName].filter(Boolean).join(' ')],
@@ -60,7 +60,7 @@ export function PatientDetailsView({
         />
       </div>
       <div>
-        <h3 className="mb-3 font-semibold text-slate-900">Contact</h3>
+        <h3 className="mb-3 font-semibold text-ink">Contact</h3>
         <DetailList
           items={[
             ['Email', p.email],
@@ -73,7 +73,7 @@ export function PatientDetailsView({
         />
       </div>
       <div>
-        <h3 className="mb-3 font-semibold text-slate-900">Emergency contact</h3>
+        <h3 className="mb-3 font-semibold text-ink">Emergency contact</h3>
         {ec ? (
           <DetailList
             items={[
@@ -84,7 +84,7 @@ export function PatientDetailsView({
             ]}
           />
         ) : (
-          <p className="text-slate-600 italic">Not recorded</p>
+          <p className="text-ink-muted italic">Not recorded</p>
         )}
       </div>
     </div>
@@ -220,7 +220,7 @@ export function PatientDetailsForm({
       <div aria-live="assertive">{formError && <Alert>{formError}</Alert>}</div>
 
       <fieldset className="flex flex-col gap-4">
-        <legend className="mb-3 font-semibold text-slate-900">Personal</legend>
+        <legend className="mb-3 font-semibold text-ink">Personal</legend>
         <div className="grid gap-4 sm:grid-cols-[8rem_1fr_1fr]">
           <TextField
             label="Title (optional)"
@@ -297,7 +297,7 @@ export function PatientDetailsForm({
       </fieldset>
 
       <fieldset className="flex flex-col gap-4">
-        <legend className="mb-3 font-semibold text-slate-900">Contact</legend>
+        <legend className="mb-3 font-semibold text-ink">Contact</legend>
         <div className="grid gap-4 sm:grid-cols-2">
           {showContactEmail && (
             <TextField
@@ -368,8 +368,8 @@ export function PatientDetailsForm({
       </fieldset>
 
       <fieldset className="flex flex-col gap-4">
-        <legend className="mb-1 font-semibold text-slate-900">Emergency contact (optional)</legend>
-        <p className="text-sm text-slate-700">Leave all four fields blank if there is no one.</p>
+        <legend className="mb-1 font-semibold text-ink">Emergency contact (optional)</legend>
+        <p className="text-sm text-ink-muted">Leave all four fields blank if there is no one.</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField
             label="Contact name"

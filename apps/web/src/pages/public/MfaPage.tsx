@@ -77,7 +77,7 @@ export function MfaPage() {
         <div aria-live="assertive">{error && <Alert>{error}</Alert>}</div>
         {mode === 'totp' ? (
           <>
-            <p className="text-slate-800">Enter the 6-digit code from your authenticator app.</p>
+            <p className="text-ink">Enter the 6-digit code from your authenticator app.</p>
             <CodeInput
               ref={codeRef}
               label="Authentication code"
@@ -89,7 +89,7 @@ export function MfaPage() {
           </>
         ) : (
           <>
-            <p className="text-slate-800">
+            <p className="text-ink">
               Enter one of the recovery codes you saved when you set up two-step verification. Each
               code works once.
             </p>

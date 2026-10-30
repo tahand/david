@@ -42,12 +42,12 @@ export function PatientDetailPage() {
     return (
       <div className="flex flex-col gap-4">
         <PageHeading>{notFound ? 'Patient not found' : 'Something went wrong'}</PageHeading>
-        <p className="text-slate-800">
+        <p className="text-ink">
           {notFound
             ? "This patient doesn't exist, or isn't one of your patients."
             : "We couldn't load this patient. Please try again."}
         </p>
-        <Link to="/patients" className="text-brand-700 underline">
+        <Link to="/patients" className="text-link underline">
           Back to patients
         </Link>
       </div>
@@ -68,12 +68,12 @@ export function PatientDetailPage() {
 
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <Link to="/patients" className="text-sm text-brand-700 underline">
+      <Link to="/patients" className="text-sm text-link underline">
         Back to patients
       </Link>
       <div>
         <PageHeading>{fullName(patient)}</PageHeading>
-        <p className="-mt-4 text-slate-800">
+        <p className="-mt-4 text-ink">
           Born {formatDate(patient.dateOfBirth)}
           {patient.hasLogin ? ' · Has an online account' : ' · No online account'}
         </p>
@@ -132,7 +132,7 @@ export function PatientDetailPage() {
       </Section>
 
       <Section title="Appointments">
-        <p className="text-slate-800">Appointment history will appear here.</p>
+        <p className="text-ink">Appointment history will appear here.</p>
       </Section>
     </div>
   );

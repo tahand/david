@@ -1,0 +1,56 @@
+/* ===================================================
+   DERIVED DESIGN TOKENS
+   ===================================================
+   Built from the five palette colours with color-mix() so every theme stays
+   WCAG 2.1 AA (SPEC §10) without hand-picking extra shades. Tailwind
+   utilities for these live in index.css (@theme): bg-brand, text-heading,
+   text-link, bg-page, bg-card, text-ink, border-line, …
+
+   The --mix-* knobs say how much of the palette colour to keep. A theme whose
+   raw colours fail contrast overrides its knobs below; theme.test.ts
+   recomputes these formulas, so keep the two in sync.
+
+   Set data-theme on <html> (lib/theme.ts does): these are computed there. */
+
+:root {
+  /* Knobs (Trust & Calm passes with the defaults). */
+  --mix-brand: 100%; /* primary vs black, for filled buttons and the header */
+  --mix-heading: 100%; /* primary vs text, for headings */
+  --mix-link: 60%; /* secondary vs text, for links and interactive text */
+
+  /* Primary: filled buttons, the app header, headings. */
+  --brand: color-mix(in srgb, var(--color-primary) var(--mix-brand), black);
+  --brand-hover: color-mix(in srgb, var(--brand) 85%, black);
+  --on-brand: #ffffff;
+  --heading: color-mix(in srgb, var(--color-primary) var(--mix-heading), var(--color-text));
+
+  /* Secondary: links, secondary buttons, focus rings, active states. */
+  --link: color-mix(in srgb, var(--color-secondary) var(--mix-link), var(--color-text));
+  --link-hover: color-mix(in srgb, var(--link) 80%, var(--color-text));
+
+  /* Accent: neutral badges, highlights, info messages (as a soft tint). */
+  --accent-soft: color-mix(in srgb, var(--color-accent) 30%, white);
+
+  /* Background: page, and slightly lighter cards. */
+  --page: var(--color-bg);
+  --card: color-mix(in srgb, var(--color-bg) 25%, white);
+
+  /* Text: body copy, secondary copy, borders. */
+  --ink: var(--color-text);
+  --ink-muted: color-mix(in srgb, var(--color-text) 80%, white);
+  --line: color-mix(in srgb, var(--color-text) 15%, white);
+  /* Form controls need 3:1 against the card (WCAG 1.4.11). */
+  --line-strong: color-mix(in srgb, var(--color-text) 60%, white);
+}
+
+/* Accessibility adjustments for palettes whose raw colours fail AA. */
+[data-theme='natural-and-healing'] {
+  --mix-heading: 90%;
+}
+
+[data-theme='uplifting-and-welcoming'] {
+  /* White on Warm Coral is 4.0:1, and Soft Gold text is unreadable on cream. */
+  --mix-brand: 80%;
+  --mix-heading: 80%;
+  --mix-link: 30%;
+}

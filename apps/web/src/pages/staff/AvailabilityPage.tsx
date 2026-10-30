@@ -50,7 +50,7 @@ export function AvailabilityPage() {
             : "We couldn't load this page. Please try again."}
         </Alert>
       ) : !doctorId ? (
-        <p className="text-slate-800">There are no doctors yet.</p>
+        <p className="text-ink">There are no doctors yet.</p>
       ) : (
         <DoctorAvailability key={doctorId} doctorId={doctorId} />
       )}
@@ -70,7 +70,7 @@ function DoctorAvailability({ doctorId }: { doctorId: string }) {
 
   return (
     <>
-      <p className="-mt-2 text-sm text-slate-700">
+      <p className="-mt-2 text-sm text-ink-muted">
         All times are clinic time ({data.timezone}). Patients can book slots inside these hours.
       </p>
       <Section title="Weekly hours">

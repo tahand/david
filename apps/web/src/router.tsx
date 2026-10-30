@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './auth/AuthProvider';
 import { HomeRedirect, PublicOnly, RequireAuth } from './auth/guards';
 import { SessionTimeout } from './auth/SessionTimeout';
 import { AppShell } from './components/layouts';
+import { useClinicTheme } from './lib/theme';
 import { MfaSetupPage } from './pages/account/MfaSetupPage';
 import { SecurityPage } from './pages/account/SecurityPage';
 import { ForbiddenPage } from './pages/ForbiddenPage';
@@ -39,9 +40,15 @@ function GlobalErrorHandling() {
   return null;
 }
 
+function ClinicTheme() {
+  useClinicTheme();
+  return null;
+}
+
 function Root() {
   return (
     <AuthProvider>
+      <ClinicTheme />
       <GlobalErrorHandling />
       <SessionTimeout />
       <Outlet />

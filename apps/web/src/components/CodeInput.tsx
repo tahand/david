@@ -19,7 +19,7 @@ export const CodeInput = forwardRef<
   const errorId = `${id}-error`;
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-sm font-medium text-slate-900">
+      <label htmlFor={id} className="text-sm font-medium text-ink">
         {label}
       </label>
       <input
@@ -33,8 +33,8 @@ export const CodeInput = forwardRef<
         maxLength={6}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
-        className={`w-40 rounded-md border px-3 py-2 text-center font-mono text-2xl tracking-[0.4em] text-slate-900 ${
-          error ? 'border-red-700' : 'border-slate-500'
+        className={`w-40 rounded-md border px-3 py-2 text-center font-mono text-2xl tracking-[0.4em] text-ink ${
+          error ? 'border-red-700' : 'border-line-strong'
         }`}
         onChange={(e) => {
           const digits = e.target.value.replace(/\D/g, '').slice(0, 6);

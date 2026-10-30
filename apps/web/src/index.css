@@ -1,12 +1,41 @@
 @import 'tailwindcss';
+@import './theme/palettes.css';
+@import './theme/tokens.css';
 
-@theme {
-  --color-brand-600: #0f5c8c;
-  --color-brand-700: #0b4a72;
+/*
+ * Tailwind utilities for the theme tokens (theme/tokens.css). Use these, not
+ * raw colours, so the clinic theme applies everywhere. Red, amber and green
+ * stay as Tailwind colours for error / warning / success, which must keep
+ * their meaning in every theme.
+ */
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-on-brand: var(--on-brand);
+  --color-heading: var(--heading);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-page: var(--page);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+}
+
+body {
+  background-color: var(--page);
+  color: var(--ink);
 }
 
 /* Visible focus for keyboard users (WCAG 2.1 AA). */
 :focus-visible {
-  outline: 3px solid var(--color-brand-600);
+  outline: 3px solid var(--link);
   outline-offset: 2px;
+}
+
+/* On the brand bar the link colour lacks contrast; use the on-brand colour. */
+[data-surface='brand'] :focus-visible {
+  outline-color: var(--on-brand);
 }

@@ -112,25 +112,25 @@ export function ExceptionsPanel({
     <div className="flex flex-col gap-6">
       <div aria-live="polite">{message && <Alert tone="success">{message}</Alert>}</div>
       {exceptions.length === 0 ? (
-        <p className="text-slate-800">No upcoming time off or extra sessions.</p>
+        <p className="text-ink">No upcoming time off or extra sessions.</p>
       ) : (
-        <ul className="divide-y divide-slate-200 rounded-md border border-slate-200">
+        <ul className="divide-y divide-line rounded-md border border-line">
           {exceptions.map((e) => (
             <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 p-3">
               <div className="min-w-0">
-                <p className="font-medium text-slate-900">
+                <p className="font-medium text-ink">
                   <span
                     className={`mr-2 rounded px-2 py-0.5 text-xs ${
                       e.type === 'unavailable'
                         ? 'bg-amber-100 text-amber-950'
-                        : 'bg-green-100 text-green-900'
+                        : 'bg-accent-soft text-ink'
                     }`}
                   >
                     {TYPE_LABELS[e.type]}
                   </span>
                   {formatLocalRange(e.startsAtLocal, e.endsAtLocal)}
                 </p>
-                {e.reason && <p className="text-sm break-words text-slate-700">{e.reason}</p>}
+                {e.reason && <p className="text-sm break-words text-ink-muted">{e.reason}</p>}
               </div>
               <Button
                 variant="secondary"
@@ -159,7 +159,7 @@ export function ExceptionsPanel({
       )}
 
       <form noValidate onSubmit={submit} className="flex flex-col gap-4">
-        <h3 className="font-semibold text-slate-900">Add time off or an extra session</h3>
+        <h3 className="font-semibold text-ink">Add time off or an extra session</h3>
         <div aria-live="assertive">{formError && <Alert>{formError}</Alert>}</div>
         <div className="grid gap-4 sm:grid-cols-2">
           <SelectField

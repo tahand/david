@@ -1,0 +1,54 @@
+/* ===================================================
+   CARE SYSTEM COLOR PALETTES
+   ===================================================
+   The five source colours per theme. Everything else (button fills, link
+   and heading colours, borders, tints) is derived in tokens.css. To customise
+   a theme, change these values; to add one, copy a block, give it a new
+   data-theme name and add it to THEMES in packages/shared/src/theme.ts.
+   theme.test.ts checks every theme here for WCAG AA contrast. */
+
+/* 1. Trust & Calm (Default / Accessible) */
+:root,
+[data-theme='trust-and-calm'] {
+  --color-primary: #1b365d; /* Primary Blue */
+  --color-secondary: #4a90e2; /* Supporting Blue */
+  --color-accent: #80c5b3; /* Soft Teal */
+  --color-bg: #f4f6f9; /* Light Background */
+  --color-text: #2a2f35; /* Dark Slate */
+}
+
+/* 2. Warm & Compassionate */
+[data-theme='warm-and-compassionate'] {
+  --color-primary: #0e7490; /* Caring Teal */
+  --color-secondary: #e07a5f; /* Warm Terracotta */
+  --color-accent: #f4e2de; /* Gentle Peach */
+  --color-bg: #faf7f2; /* Warm Cream */
+  --color-text: #2d3748; /* Charcoal */
+}
+
+/* 3. Natural & Healing */
+[data-theme='natural-and-healing'] {
+  --color-primary: #4a7c59; /* Sage Green */
+  --color-secondary: #68a357; /* Healing Olive */
+  --color-accent: #e9e3d3; /* Warm Sand */
+  --color-bg: #f1f7f4; /* Pale Mint */
+  --color-text: #223826; /* Forest Green */
+}
+
+/* 4. Uplifting & Welcoming */
+[data-theme='uplifting-and-welcoming'] {
+  --color-primary: #d9534f; /* Warm Coral */
+  --color-secondary: #e9d460; /* Soft Gold */
+  --color-accent: #5bc0de; /* Sky Blue */
+  --color-bg: #fcf8f2; /* Pale Cream */
+  --color-text: #333333; /* Deep Gray */
+}
+
+/* 5. Serene & Professional */
+[data-theme='serene-and-professional'] {
+  --color-primary: #2c3e50; /* Classic Navy */
+  --color-secondary: #8e44ad; /* Amethyst */
+  --color-accent: #d2b4de; /* Soft Lilac */
+  --color-bg: #eaeded; /* Soft Gray-Blue */
+  --color-text: #1c2833; /* Dark Indigo */
+}

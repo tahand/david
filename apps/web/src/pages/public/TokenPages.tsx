@@ -46,7 +46,7 @@ export function VerifyEmailPage() {
       {state === 'ok' && (
         <>
           <Alert tone="success">Your email address is confirmed.</Alert>
-          <Link to="/" className="mt-4 inline-block text-brand-700 underline">
+          <Link to="/" className="mt-4 inline-block text-link underline">
             Continue
           </Link>
         </>
@@ -54,10 +54,10 @@ export function VerifyEmailPage() {
       {state === 'error' && (
         <>
           <Alert>This link is invalid or has expired.</Alert>
-          <p className="mt-4 text-slate-800">
+          <p className="mt-4 text-ink">
             Sign in and use the reminder on your dashboard to send a new link.
           </p>
-          <Link to="/login" className="mt-4 inline-block text-brand-700 underline">
+          <Link to="/login" className="mt-4 inline-block text-link underline">
             Go to sign in
           </Link>
         </>
@@ -93,15 +93,15 @@ export function ForgotPasswordPage() {
       {message ? (
         <>
           <Alert tone="success">{message}</Alert>
-          <p className="mt-4 text-slate-800">The link works once and expires after 30 minutes.</p>
-          <Link to="/login" className="mt-4 inline-block text-brand-700 underline">
+          <p className="mt-4 text-ink">The link works once and expires after 30 minutes.</p>
+          <Link to="/login" className="mt-4 inline-block text-link underline">
             Back to sign in
           </Link>
         </>
       ) : (
         <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
           <div aria-live="assertive">{formError && <Alert>{formError}</Alert>}</div>
-          <p className="text-slate-800">
+          <p className="text-ink">
             Enter your email and we'll send you a link to choose a new password.
           </p>
           <TextField
@@ -114,7 +114,7 @@ export function ForgotPasswordPage() {
           <Button type="submit" loading={isSubmitting} className="w-full">
             Send reset link
           </Button>
-          <Link to="/login" className="text-sm text-brand-700 underline">
+          <Link to="/login" className="text-sm text-link underline">
             Back to sign in
           </Link>
         </form>
@@ -155,7 +155,7 @@ export function ResetPasswordPage() {
     return (
       <AuthLayout title="Reset your password">
         <Alert>This link is invalid or has expired.</Alert>
-        <Link to="/forgot-password" className="mt-4 inline-block text-brand-700 underline">
+        <Link to="/forgot-password" className="mt-4 inline-block text-link underline">
           Request a new link
         </Link>
       </AuthLayout>
@@ -169,7 +169,7 @@ export function ResetPasswordPage() {
           <Alert tone="success">
             Your password has been changed and you've been signed out everywhere.
           </Alert>
-          <Link to="/login" className="mt-4 inline-block text-brand-700 underline">
+          <Link to="/login" className="mt-4 inline-block text-link underline">
             Sign in
           </Link>
         </>

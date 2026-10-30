@@ -136,10 +136,10 @@ export function WeeklyHoursEditor({
           const day = ordered(blocks).filter((b) => b.weekday === wd);
           const name = WEEKDAY_NAMES[wd];
           return (
-            <li key={wd} className="rounded-md border border-slate-200 p-3 sm:p-4">
+            <li key={wd} className="rounded-md border border-line p-3 sm:p-4">
               <fieldset className="flex flex-col gap-3">
-                <legend className="font-semibold text-slate-900">{name}</legend>
-                {day.length === 0 && <p className="text-sm text-slate-700">Not working</p>}
+                <legend className="font-semibold text-ink">{name}</legend>
+                {day.length === 0 && <p className="text-sm text-ink-muted">Not working</p>}
                 {day.map((b, i) => {
                   const err = errors[b.key];
                   return (

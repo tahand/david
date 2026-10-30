@@ -61,11 +61,11 @@ export function RegisterPage() {
     return (
       <AuthLayout title="Check your email">
         <Alert tone="success">{done}</Alert>
-        <p className="mt-4 text-slate-800">
+        <p className="mt-4 text-ink">
           We've sent a confirmation link. You can sign in now, but you'll need to confirm your email
           before booking an appointment.
         </p>
-        <Link to="/login" className="mt-4 inline-block text-brand-700 underline">
+        <Link to="/login" className="mt-4 inline-block text-link underline">
           Go to sign in
         </Link>
       </AuthLayout>
@@ -132,7 +132,7 @@ export function RegisterPage() {
                 to="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-700 underline"
+                className="text-link underline"
               >
                 privacy notice
               </Link>{' '}
@@ -141,7 +141,7 @@ export function RegisterPage() {
                 to="/terms"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-brand-700 underline"
+                className="text-link underline"
               >
                 terms of use
               </Link>
@@ -153,9 +153,9 @@ export function RegisterPage() {
         <Button type="submit" loading={isSubmitting} className="w-full">
           Create account
         </Button>
-        <p className="text-sm text-slate-800">
+        <p className="text-sm text-ink">
           Already registered?{' '}
-          <Link to="/login" className="text-brand-700 underline">
+          <Link to="/login" className="text-link underline">
             Sign in
           </Link>
         </p>

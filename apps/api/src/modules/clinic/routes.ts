@@ -21,6 +21,7 @@ export function clinicRoutes(prisma: PrismaClient, timezone: string): Router {
         consentVersion: s.consentVersion,
         healthIdLabel: s.healthIdLabel,
         timezone,
+        theme: s.theme,
       };
       res.setHeader('Cache-Control', 'public, max-age=300');
       res.json(body);

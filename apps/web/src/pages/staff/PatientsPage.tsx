@@ -9,8 +9,8 @@ import { formatDate } from '../../lib/format';
 
 function ResultField({ label, value }: { label: string; value: string | null }) {
   return (
-    <p className="text-slate-900">
-      <span className="text-slate-700 sm:sr-only">{label}: </span>
+    <p className="text-ink">
+      <span className="text-ink-muted sm:sr-only">{label}: </span>
       {value ?? '—'}
     </p>
   );
@@ -49,14 +49,14 @@ export function PatientsPage() {
         {canCreate && (
           <Link
             to="/patients/new"
-            className="rounded-md bg-brand-700 px-4 py-2.5 font-medium text-white hover:bg-brand-600"
+            className="rounded-md bg-brand px-4 py-2.5 font-medium text-on-brand hover:bg-brand-hover"
           >
             Add patient
           </Link>
         )}
       </div>
       {me?.user.role === 'doctor' && (
-        <p className="text-slate-800">You can see patients who have an appointment with you.</p>
+        <p className="text-ink">You can see patients who have an appointment with you.</p>
       )}
 
       <form role="search" onSubmit={onSearch} className="flex flex-wrap items-end gap-3">
@@ -79,7 +79,7 @@ export function PatientsPage() {
       ) : query.isError ? (
         <Alert>We couldn't load patients. Please try again.</Alert>
       ) : query.data.patients.length === 0 ? (
-        <p className="text-slate-800" role="status">
+        <p className="text-ink" role="status">
           {search ? `No patients match "${search}".` : 'No patients yet.'}
         </p>
       ) : (
@@ -87,10 +87,10 @@ export function PatientsPage() {
           {/* One list for every screen size: stacked cards on phones, a
               table-like grid from `sm` up. Field labels are visible on phones
               and screen-reader-only on wider screens. */}
-          <div className="rounded-lg border border-slate-200 bg-white text-sm">
+          <div className="rounded-lg border border-line bg-card text-sm">
             <div
               aria-hidden="true"
-              className="hidden grid-cols-[2fr_1fr_1fr_1fr] gap-4 border-b border-slate-200 bg-slate-50 px-4 py-3 font-semibold text-slate-900 sm:grid"
+              className="hidden grid-cols-[2fr_1fr_1fr_1fr] gap-4 border-b border-line bg-page px-4 py-3 font-semibold text-ink sm:grid"
             >
               <span>Name</span>
               <span>Date of birth</span>
@@ -103,11 +103,11 @@ export function PatientsPage() {
               {query.data.patients.map((p) => (
                 <li
                   key={p.id}
-                  className="grid gap-1 border-b border-slate-100 px-4 py-3 last:border-0 sm:grid-cols-[2fr_1fr_1fr_1fr] sm:gap-4"
+                  className="grid gap-1 border-b border-line px-4 py-3 last:border-0 sm:grid-cols-[2fr_1fr_1fr_1fr] sm:gap-4"
                 >
                   <Link
                     to={`/patients/${p.id}`}
-                    className="flex min-h-11 items-center font-medium text-brand-700 underline sm:min-h-0"
+                    className="flex min-h-11 items-center font-medium text-link underline sm:min-h-0"
                   >
                     {p.lastName}, {p.firstName}
                     {p.preferredName && ` (${p.preferredName})`}
@@ -123,7 +123,7 @@ export function PatientsPage() {
             <Button variant="secondary" disabled={page <= 1} onClick={() => go(search, page - 1)}>
               Previous
             </Button>
-            <span className="text-sm text-slate-800">Page {page}</span>
+            <span className="text-sm text-ink">Page {page}</span>
             <Button
               variant="secondary"
               disabled={!query.data.hasMore}

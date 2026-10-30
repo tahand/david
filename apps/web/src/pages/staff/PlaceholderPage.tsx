@@ -5,7 +5,7 @@ export function PlaceholderPage({ title, phase }: { title: string; phase: string
   return (
     <div>
       <PageHeading>{title}</PageHeading>
-      <p className="text-slate-800">This area arrives in {phase}.</p>
+      <p className="text-ink">This area arrives in {phase}.</p>
     </div>
   );
 }

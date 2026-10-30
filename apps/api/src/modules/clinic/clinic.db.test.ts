@@ -25,6 +25,7 @@ describe('GET /api/clinic', () => {
         'consentVersion',
         'healthIdLabel',
         'timezone',
+        'theme',
       ].sort(),
     );
     expect(res.body.clinicName).toBeTruthy();
