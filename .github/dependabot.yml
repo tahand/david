@@ -1,0 +1,30 @@
+# Keeps dependencies and base images on supported, patched releases
+# (Cyber Essentials: security update management; SPEC §11). Security fixes
+# arrive as soon as an advisory is published; routine updates weekly.
+# High/critical fixes must be merged and deployed within 14 days.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    open-pull-requests-limit: 10
+    groups:
+      # One PR for routine minor/patch bumps; majors stay separate for review.
+      minor-and-patch:
+        update-types: [minor, patch]
+    labels: [dependencies, security-updates]
+
+  - package-ecosystem: docker
+    directory: /deploy/local
+    schedule: { interval: weekly, day: monday }
+    labels: [dependencies, security-updates]
+
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule: { interval: weekly, day: monday }
+    labels: [dependencies, security-updates]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: monthly }
+    labels: [dependencies]
