@@ -27,7 +27,7 @@ export function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone: () =
       </Alert>
       <ol
         aria-label="Recovery codes"
-        className="grid grid-cols-2 gap-2 rounded-md bg-slate-100 p-4 font-mono text-slate-900"
+        className="grid grid-cols-2 gap-2 rounded-md bg-page p-4 font-mono text-ink"
       >
         {codes.map((c) => (
           <li key={c}>{c}</li>

@@ -11,10 +11,10 @@ function LegalPage({ title, children }: { title: string; children: ReactNode }) 
   const clinic = useClinicInfo();
   return (
     <AuthLayout title={title}>
-      <div className="flex flex-col gap-3 text-slate-800">
+      <div className="flex flex-col gap-3 text-ink">
         {children}
-        <p className="text-sm text-slate-700">Version {clinic.data?.consentVersion ?? '—'}</p>
-        <Link to="/register" className="text-brand-700 underline">
+        <p className="text-sm text-ink-muted">Version {clinic.data?.consentVersion ?? '—'}</p>
+        <Link to="/register" className="text-link underline">
           Back
         </Link>
       </div>

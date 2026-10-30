@@ -13,8 +13,8 @@ export function useClinicInfo() {
 function Logo() {
   return (
     <svg aria-hidden="true" viewBox="0 0 32 32" className="h-10 w-10">
-      <rect width="32" height="32" rx="6" fill="#0b4a72" />
-      <path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" fill="#fff" />
+      <rect width="32" height="32" rx="6" className="fill-brand" />
+      <path d="M13 7h6v6h6v6h-6v6h-6v-6H7v-6h6z" className="fill-on-brand" />
     </svg>
   );
 }
@@ -23,16 +23,16 @@ function Logo() {
 export function AuthLayout({ title, children }: { title: string; children: ReactNode }) {
   const clinic = useClinicInfo();
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-10">
+    <div className="min-h-screen bg-page px-4 py-10">
       <main id="main" className="mx-auto w-full max-w-md">
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
           <Logo />
-          <p className="text-lg font-semibold text-slate-900">
+          <p className="text-lg font-semibold text-ink">
             {clinic.data?.clinicName ?? 'Clinic Appointments'}
           </p>
         </div>
-        <div className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
-          <h1 className="mb-5 text-2xl font-semibold text-slate-900">{title}</h1>
+        <div className="rounded-lg bg-card p-6 shadow-sm sm:p-8">
+          <h1 className="mb-5 text-2xl font-semibold text-heading">{title}</h1>
           {children}
         </div>
       </main>
@@ -82,21 +82,22 @@ export function AppShell() {
   useEffect(() => setMenuOpen(false), [location.pathname]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-page">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-white focus:px-3 focus:py-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-card focus:px-3 focus:py-2 focus:text-ink"
       >
         Skip to main content
       </a>
-      <header className="border-b border-slate-200 bg-white">
+      {/* Brand bar (primary colour); data-surface switches focus rings to the on-brand colour. */}
+      <header data-surface="brand" className="bg-brand text-on-brand">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-4 px-4 py-2">
-          <Link to="/" className="flex min-h-11 items-center font-semibold text-slate-900">
+          <Link to="/" className="flex min-h-11 items-center font-semibold">
             {clinic.data?.clinicName ?? 'Clinic Appointments'}
           </Link>
           <button
             type="button"
-            className="flex min-h-11 items-center gap-2 rounded-md border border-slate-400 px-3 text-sm font-medium text-slate-900 md:hidden"
+            className="flex min-h-11 items-center gap-2 rounded-md border border-on-brand px-3 text-sm font-medium md:hidden"
             aria-expanded={menuOpen}
             aria-controls={navId}
             onClick={() => setMenuOpen((open) => !open)}
@@ -113,7 +114,7 @@ export function AppShell() {
           <nav
             id={navId}
             aria-label="Main"
-            className={`${menuOpen ? 'flex' : 'hidden'} w-full flex-col gap-1 border-t border-slate-200 py-2 md:flex md:w-auto md:flex-row md:items-center md:gap-4 md:border-0 md:py-0`}
+            className={`${menuOpen ? 'flex' : 'hidden'} w-full flex-col gap-1 border-t border-on-brand/30 py-2 md:flex md:w-auto md:flex-row md:items-center md:gap-4 md:border-0 md:py-0`}
           >
             {role &&
               !enrolling &&
@@ -122,15 +123,14 @@ export function AppShell() {
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `flex min-h-11 items-center rounded px-2 md:px-0 ${isActive ? 'font-semibold text-brand-700 underline' : 'text-slate-800 hover:text-brand-700'}`
+                    // Active = bold + underline: colour alone can't carry state on the brand bar.
+                    `flex min-h-11 items-center rounded px-2 underline-offset-4 md:px-0 ${isActive ? 'font-semibold underline decoration-2' : 'hover:underline'}`
                   }
                 >
                   {item.label}
                 </NavLink>
               ))}
-            <span className="truncate px-2 py-2 text-sm text-slate-700 md:max-w-56 md:px-0">
-              {me?.user.email}
-            </span>
+            <span className="truncate px-2 py-2 text-sm md:max-w-56 md:px-0">{me?.user.email}</span>
             <Button
               variant="secondary"
               className="min-h-11 md:!px-3 md:!py-1.5 md:text-sm"
@@ -152,5 +152,5 @@ export function AppShell() {
 }
 
 export function PageHeading({ children }: { children: ReactNode }) {
-  return <h1 className="mb-6 text-2xl font-semibold text-slate-900">{children}</h1>;
+  return <h1 className="mb-6 text-2xl font-semibold text-heading">{children}</h1>;
 }

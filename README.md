@@ -46,6 +46,27 @@ Demo logins all use the password `demo-password-not-for-production`: `test.patie
 
 It runs alongside the dev setup above, using its own ports (8080, 8026) and Docker project (`clinic-local`). To check the phone layout, open the app in Chrome or Edge and press `Ctrl+Shift+M` for device mode. To test on a real phone, see the note in `docker-compose.local.yml`.
 
+## Colour themes
+
+The site ships with five palettes, defined in `apps/web/src/theme/palettes.css`. Trust & Calm is the default.
+
+| Theme ID                  | Name                  |
+| ------------------------- | --------------------- |
+| `trust-and-calm`          | Trust & Calm          |
+| `warm-and-compassionate`  | Warm & Compassionate  |
+| `natural-and-healing`     | Natural & Healing     |
+| `uplifting-and-welcoming` | Uplifting & Welcoming |
+| `serene-and-professional` | Serene & Professional |
+
+- **Preview** a theme on any page by adding `?theme=<id>` to the URL, e.g. http://localhost:8080/login?theme=natural-and-healing. It lasts until the page is reloaded.
+- **Switch the clinic's theme** with the `theme` clinic setting. An admin settings page comes in phase 9; until then, set it in the database:
+  ```sql
+  INSERT INTO clinic_settings (key, value) VALUES ('theme', '"natural-and-healing"')
+  ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now();
+  ```
+- **Customise** by editing the five `--color-*` values of a theme. Button, link, heading, border and badge shades are derived in `tokens.css`.
+- **Check contrast:** `npm test -w @clinic/web` checks every theme against WCAG AA. If a custom palette fails, raise or lower that theme's `--mix-*` knobs in `tokens.css`.
+
 ## Tests
 
 - `npm test` — unit and API tests, no database needed.

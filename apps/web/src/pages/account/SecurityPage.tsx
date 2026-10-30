@@ -20,11 +20,8 @@ const errorText = (err: unknown) =>
 function Section({ title, children }: { title: string; children: ReactNode }) {
   const id = useId();
   return (
-    <section
-      aria-labelledby={id}
-      className="rounded-lg border border-slate-200 bg-white p-4 sm:p-6"
-    >
-      <h2 id={id} className="mb-4 text-lg font-semibold text-slate-900">
+    <section aria-labelledby={id} className="rounded-lg border border-line bg-card p-4 sm:p-6">
+      <h2 id={id} className="mb-4 text-lg font-semibold text-heading">
         {title}
       </h2>
       {children}
@@ -160,20 +157,20 @@ function TwoStep() {
       <div aria-live="polite">{notice && <Alert tone="success">{notice}</Alert>}</div>
       {!me.user.mfaEnabled ? (
         <div className="flex flex-col items-start gap-3">
-          <p className="text-slate-800">
+          <p className="text-ink">
             Two-step verification is <strong>off</strong>. Turning it on protects your account even
             if your password is stolen.
           </p>
           <Link
             to="/mfa/setup"
-            className="rounded-md bg-brand-700 px-4 py-2.5 font-medium text-white hover:bg-brand-600"
+            className="rounded-md bg-brand px-4 py-2.5 font-medium text-on-brand hover:bg-brand-hover"
           >
             Set up two-step verification
           </Link>
         </div>
       ) : mode === 'idle' ? (
         <div className="flex flex-col items-start gap-3">
-          <p className="text-slate-800">
+          <p className="text-ink">
             Two-step verification is <strong>on</strong>.
             {staff && ' It is required for staff accounts.'}
           </p>
@@ -190,7 +187,7 @@ function TwoStep() {
         </div>
       ) : (
         <form noValidate onSubmit={submit} className="flex max-w-md flex-col gap-4">
-          <p className="text-slate-800">
+          <p className="text-ink">
             {mode === 'regenerate'
               ? 'Your current recovery codes will stop working. Enter a code from your authenticator app to continue.'
               : 'Confirm with your password and a code from your authenticator app.'}
@@ -254,15 +251,15 @@ function Sessions() {
     <Section title="Where you're signed in">
       {sessions.isError && <Alert>{errorText(sessions.error)}</Alert>}
       {revoke.isError && <Alert>{errorText(revoke.error)}</Alert>}
-      <ul className="divide-y divide-slate-200">
+      <ul className="divide-y divide-line">
         {sessions.data?.sessions.map((s) => (
           <li key={s.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
             {/* User-agent strings are long and unbroken; let them wrap on phones. */}
-            <div className="min-w-0 text-sm break-words text-slate-800">
-              <p className="font-medium text-slate-900">
+            <div className="min-w-0 text-sm break-words text-ink">
+              <p className="font-medium text-ink">
                 {s.userAgent ?? 'Unknown device'}
                 {s.current && (
-                  <span className="ml-2 rounded bg-green-100 px-2 py-0.5 text-xs text-green-900">
+                  <span className="ml-2 rounded bg-accent-soft px-2 py-0.5 text-xs text-ink">
                     This device
                   </span>
                 )}

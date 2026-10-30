@@ -69,6 +69,11 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
   - Calendar dates and wall-clock times travel as strings (`2026-11-03`, `09:00`, `2026-11-03T09:00`); instants as UTC ISO strings.
 - Slots: `lib/slots.ts` is pure. Any change needs unit tests, including DST cases for Europe/London and America/New_York.
 - Frontend: no `dangerouslySetInnerHTML`, no `localStorage`/`sessionStorage` (ESLint enforces both).
+- Colours come from the theme, never raw Tailwind palettes:
+  - Use `bg-brand`/`text-on-brand` for primary buttons and the header, `text-heading` for h1/h2, `text-link` for links and secondary actions, `bg-accent-soft` for neutral badges and info, `bg-page`/`bg-card` for backgrounds, `text-ink`/`text-ink-muted` for text, and `border-line`/`border-line-strong` for borders.
+  - Red, amber and green are only for error, warning and success.
+  - Themes live in `apps/web/src/theme/palettes.css` (5 source colours each) and are derived in `tokens.css`. `theme.test.ts` fails if any theme drops below WCAG AA; fix it with that theme's `--mix-*` knobs.
+  - The clinic's theme is the `theme` clinic setting; `?theme=<id>` previews one.
 - Mobile-friendly is a requirement for every screen. Build mobile-first: the base Tailwind classes target a 360px-wide phone, and `sm:`/`md:` add the wider layout. No horizontal page scrolling. Touch targets are at least 44px (`min-h-11`), and inputs use `text-base` so iOS doesn't zoom. Use one set of markup that reflows (stacked cards on phones, grid or table from `sm` up), not separate mobile and desktop copies. Check new pages at phone width (DevTools device mode) before finishing.
 - Dependencies: keep `npm audit` clean (high/critical blocks). `overrides` in root `package.json` pins `deepmerge-ts` ≥ 8 for Prisma 6.
 - Conventional commits.

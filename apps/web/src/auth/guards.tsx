@@ -7,7 +7,7 @@ import { destinationFor, loginPathFor } from './navigation';
 
 function FullPageLoading() {
   return (
-    <div className="flex min-h-screen items-center justify-center text-slate-700">
+    <div className="flex min-h-screen items-center justify-center text-ink-muted">
       <Spinner label="Loading your account" />
     </div>
   );

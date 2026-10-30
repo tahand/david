@@ -76,12 +76,12 @@ export function LoginPage() {
           Sign in
         </Button>
         <div className="flex flex-col gap-2 text-sm">
-          <Link to="/forgot-password" className="text-brand-700 underline">
+          <Link to="/forgot-password" className="text-link underline">
             Forgot password?
           </Link>
-          <p className="text-slate-800">
+          <p className="text-ink">
             New patient?{' '}
-            <Link to="/register" className="text-brand-700 underline">
+            <Link to="/register" className="text-link underline">
               Create an account
             </Link>
           </p>

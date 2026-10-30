@@ -65,7 +65,7 @@ export function ProfilePage() {
 
       <Section title="Medical summary">
         <MedicalSummaryView patient={patient} />
-        <p className="mt-5 text-sm text-slate-800">
+        <p className="mt-5 text-sm text-ink">
           Something wrong or missing? Please tell the clinic
           {clinic.data ? ` on ${clinic.data.clinicPhone}` : ''} or mention it at your next
           appointment, and we'll update it.
@@ -73,14 +73,14 @@ export function ProfilePage() {
       </Section>
 
       <Section title="Download your data">
-        <p className="text-slate-800">
+        <p className="text-ink">
           Download a copy of the information we hold about you, including your appointments.
         </p>
         <div className="mt-3 flex flex-wrap gap-4">
-          <a href={EXPORT_URLS.pdf} download className="font-medium text-brand-700 underline">
+          <a href={EXPORT_URLS.pdf} download className="font-medium text-link underline">
             Download as PDF
           </a>
-          <a href={EXPORT_URLS.json} download className="font-medium text-brand-700 underline">
+          <a href={EXPORT_URLS.json} download className="font-medium text-link underline">
             Download as JSON (machine-readable)
           </a>
         </div>

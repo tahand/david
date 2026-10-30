@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DEFAULT_THEME, themeIdSchema, type ThemeId } from './theme.js';
 
 /**
  * Admin-configurable clinic settings, stored one row per key in
@@ -25,6 +26,8 @@ export const clinicSettingsSchema = z.object({
   retentionYears: z.number().int().min(1).max(100),
   /** Current privacy notice & terms version patients consent to at registration. */
   consentVersion: z.string().min(1).max(50),
+  /** Colour theme for the whole site (apps/web/src/theme/palettes.css). */
+  theme: themeIdSchema,
 });
 export type ClinicSettings = z.infer<typeof clinicSettingsSchema>;
 export type ClinicSettingKey = keyof ClinicSettings;
@@ -40,6 +43,7 @@ export const DEFAULT_CLINIC_SETTINGS: ClinicSettings = {
   patientChangeCutoffHours: 24,
   retentionYears: 8,
   consentVersion: '2026-10-01',
+  theme: DEFAULT_THEME,
 };
 
 /** Public, non-sensitive clinic details for unauthenticated screens. */
@@ -51,4 +55,5 @@ export interface PublicClinicInfo {
   healthIdLabel: string;
   /** IANA timezone all clinic times are shown in (CLINIC_TIMEZONE). */
   timezone: string;
+  theme: ThemeId;
 }

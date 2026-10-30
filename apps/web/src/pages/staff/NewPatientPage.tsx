@@ -12,11 +12,11 @@ export function NewPatientPage() {
 
   return (
     <div className="flex max-w-4xl flex-col gap-6">
-      <Link to="/patients" className="text-sm text-brand-700 underline">
+      <Link to="/patients" className="text-sm text-link underline">
         Back to patients
       </Link>
       <PageHeading>Add patient</PageHeading>
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-lg border border-line bg-card p-6">
         <PatientDetailsForm
           healthIdLabel={clinic.data?.healthIdLabel ?? 'Health ID'}
           showContactEmail

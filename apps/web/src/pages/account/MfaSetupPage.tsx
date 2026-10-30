@@ -100,7 +100,7 @@ export function MfaSetupPage() {
       {!setup && !loadError && <Spinner label="Preparing set-up" />}
       {setup && (
         <form noValidate onSubmit={onSubmit} className="flex flex-col gap-5">
-          <ol className="list-decimal space-y-4 pl-5 text-slate-800">
+          <ol className="list-decimal space-y-4 pl-5 text-ink">
             <li>
               Install an authenticator app such as Google Authenticator, Microsoft Authenticator or
               1Password.
@@ -112,11 +112,11 @@ export function MfaSetupPage() {
                 alt="QR code for your authenticator app. If you can't scan it, use the set-up key below."
                 width={200}
                 height={200}
-                className="mt-2 rounded border border-slate-300"
+                className="mt-2 rounded border border-line"
               />
               <p className="mt-2 text-sm">
                 Can't scan it? Enter this key instead:{' '}
-                <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-slate-900">
+                <code className="rounded bg-page px-1.5 py-0.5 font-mono text-ink">
                   {groupKey(setup.manualKey)}
                 </code>
               </p>
