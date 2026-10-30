@@ -31,6 +31,8 @@ const booleanString = z.enum(['true', 'false']).transform((v) => v === 'true');
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']),
   PORT: z.coerce.number().int().min(1).max(65535).default(4000),
+  /** Listen address. Loopback in production (Nginx is the entry point); 0.0.0.0 inside Docker. */
+  HOST: z.union([z.ipv4(), z.ipv6()]).default('127.0.0.1'),
   APP_URL: z.url(),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   DATABASE_URL: postgresUrl,
@@ -53,6 +55,7 @@ export interface Config {
   env: Env['NODE_ENV'];
   isProduction: boolean;
   port: number;
+  host: string;
   appUrl: string;
   /** Origin derived from APP_URL, used for the Origin-header check (SPEC §4.6). */
   appOrigin: string;
@@ -99,6 +102,7 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): Config {
     env: e.NODE_ENV,
     isProduction: e.NODE_ENV === 'production',
     port: e.PORT,
+    host: e.HOST,
     appUrl: e.APP_URL,
     appOrigin: new URL(e.APP_URL).origin,
     logLevel: e.LOG_LEVEL,

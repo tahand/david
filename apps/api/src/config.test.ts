@@ -6,6 +6,7 @@ describe('loadConfig', () => {
   it('parses a valid environment', () => {
     const config = loadConfig(validEnv());
     expect(config.port).toBe(4000);
+    expect(config.host).toBe('127.0.0.1');
     expect(config.appOrigin).toBe('http://localhost:5173');
     expect(config.dataEncryptionKey).toHaveLength(32);
     expect(config.hibpCheckEnabled).toBe(false);
