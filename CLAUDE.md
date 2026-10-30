@@ -35,6 +35,15 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
 - Sensitive emails are sent with `sendInBackground` so timing doesn't reveal account existence.
 - API tests: `src/test/client.ts` (`TestClient`) handles cookies, CSRF, Origin and a unique IP per client.
 
+## Frontend (phase 4)
+
+- API calls go through `apps/web/src/api/client.ts` (adds CSRF, records activity, global 401/403). Auth screens pass `{ globalErrors: false }` to handle errors inline.
+- `AuthProvider` owns sign-in state. **Never `navigate()` after signing out** — call `logout()`/`clearLocal()` and let `RequireAuth` redirect (avoids a race with the query cache).
+- Guards: `RequireAuth` (roles, `allowMfaEnrolment`), `PublicOnly`, `HomeRedirect`. Role homes in `HOME_BY_ROLE`; post-login destination via `destinationFor()` (validates `next` with `safeNext`).
+- Forms: React Hook Form + shared Zod schemas; map server `VALIDATION_ERROR` with `applyServerErrors`.
+- Components in `components/forms.tsx` are labelled and wire errors via `aria-describedby`; keep new inputs on them.
+- Tests: `src/test/mockApi.tsx` (`mockApi`, `renderApp`, `meFor`) renders the real route tree in StrictMode with a stubbed `fetch`.
+
 ## Conventions
 
 - TypeScript `strict`; no `any` without a comment explaining why. ESM everywhere (`.js` suffix on relative imports in API/shared).

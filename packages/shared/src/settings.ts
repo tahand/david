@@ -41,3 +41,11 @@ export const DEFAULT_CLINIC_SETTINGS: ClinicSettings = {
   retentionYears: 8,
   consentVersion: '2026-10-01',
 };
+
+/** Public, non-sensitive clinic details for unauthenticated screens. */
+export interface PublicClinicInfo {
+  clinicName: string;
+  clinicPhone: string;
+  clinicAddress: string;
+  consentVersion: string;
+}
