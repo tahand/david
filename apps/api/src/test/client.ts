@@ -59,6 +59,14 @@ export class TestClient {
     return this.capture(await this.prepare(request(this.app).post(path), true).send(body));
   }
 
+  async patch(path: string, body: object = {}): Promise<Response> {
+    return this.capture(await this.prepare(request(this.app).patch(path), true).send(body));
+  }
+
+  async put(path: string, body: object = {}): Promise<Response> {
+    return this.capture(await this.prepare(request(this.app).put(path), true).send(body));
+  }
+
   async delete(path: string): Promise<Response> {
     return this.capture(await this.prepare(request(this.app).delete(path), true));
   }

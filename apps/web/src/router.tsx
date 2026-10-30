@@ -10,11 +10,15 @@ import { SecurityPage } from './pages/account/SecurityPage';
 import { ForbiddenPage } from './pages/ForbiddenPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { DashboardPage } from './pages/patient/DashboardPage';
+import { ProfilePage } from './pages/patient/ProfilePage';
 import { PrivacyPage, TermsPage } from './pages/public/LegalPages';
 import { LoginPage } from './pages/public/LoginPage';
 import { MfaPage } from './pages/public/MfaPage';
 import { RegisterPage } from './pages/public/RegisterPage';
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from './pages/public/TokenPages';
+import { NewPatientPage } from './pages/staff/NewPatientPage';
+import { PatientDetailPage } from './pages/staff/PatientDetailPage';
+import { PatientsPage } from './pages/staff/PatientsPage';
 import { PlaceholderPage } from './pages/staff/PlaceholderPage';
 
 /** Wires the API client's global 401/403 handling to navigation (SPEC §10). */
@@ -76,7 +80,21 @@ export const routes: RouteObject[] = [
           },
           {
             element: <RequireAuth roles={['patient']} />,
-            children: [{ path: '/dashboard', element: <DashboardPage /> }],
+            children: [
+              { path: '/dashboard', element: <DashboardPage /> },
+              { path: '/profile', element: <ProfilePage /> },
+            ],
+          },
+          {
+            element: <RequireAuth roles={['doctor', 'receptionist', 'admin']} />,
+            children: [
+              { path: '/patients', element: <PatientsPage /> },
+              { path: '/patients/:id', element: <PatientDetailPage /> },
+            ],
+          },
+          {
+            element: <RequireAuth roles={['receptionist', 'admin']} />,
+            children: [{ path: '/patients/new', element: <NewPatientPage /> }],
           },
           {
             element: <RequireAuth roles={['doctor']} />,

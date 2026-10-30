@@ -48,4 +48,5 @@ export interface PublicClinicInfo {
   clinicPhone: string;
   clinicAddress: string;
   consentVersion: string;
+  healthIdLabel: string;
 }

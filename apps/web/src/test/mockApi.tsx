@@ -47,6 +47,7 @@ export function mockApi(table: Record<string, Handler>) {
         clinicPhone: '01632 960000',
         clinicAddress: '1 Test St',
         consentVersion: 'v-test',
+        healthIdLabel: 'NHS number',
       },
     },
     ...table,

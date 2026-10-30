@@ -41,18 +41,22 @@ export type MfaVerifyInput = z.input<typeof mfaVerifySchema>;
 
 const isoDate = z.iso.date({ message: 'Enter a valid date' });
 
+export const dateOfBirthSchema = isoDate.refine((d) => {
+  const date = new Date(`${d}T00:00:00Z`);
+  return date.getTime() < Date.now() && date.getUTCFullYear() >= 1900;
+}, 'Enter a valid date of birth');
+
+export const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^\+?[0-9 ()-]{7,20}$/, 'Enter a valid phone number');
+
 export const registerSchema = z.object({
   firstName: z.string().trim().min(1).max(100),
   lastName: z.string().trim().min(1).max(100),
-  dateOfBirth: isoDate.refine((d) => {
-    const date = new Date(`${d}T00:00:00Z`);
-    return date.getTime() < Date.now() && date.getUTCFullYear() >= 1900;
-  }, 'Enter a valid date of birth'),
+  dateOfBirth: dateOfBirthSchema,
   email: emailSchema,
-  mobile: z
-    .string()
-    .trim()
-    .regex(/^\+?[0-9 ()-]{7,20}$/, 'Enter a valid phone number'),
+  mobile: phoneSchema,
   password: passwordSchema,
   acceptTerms: z.literal(true, { message: 'You must accept the privacy notice and terms' }),
 });

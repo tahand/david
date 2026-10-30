@@ -43,18 +43,22 @@ export function AuthLayout({ title, children }: { title: string; children: React
 const NAV: Record<Role, { to: string; label: string }[]> = {
   patient: [
     { to: '/dashboard', label: 'Dashboard' },
+    { to: '/profile', label: 'Profile' },
     { to: '/account/security', label: 'Security' },
   ],
   doctor: [
     { to: '/schedule', label: 'Schedule' },
+    { to: '/patients', label: 'Patients' },
     { to: '/account/security', label: 'Security' },
   ],
   receptionist: [
     { to: '/front-desk', label: 'Front desk' },
+    { to: '/patients', label: 'Patients' },
     { to: '/account/security', label: 'Security' },
   ],
   admin: [
     { to: '/admin/users', label: 'Users' },
+    { to: '/patients', label: 'Patients' },
     { to: '/account/security', label: 'Security' },
   ],
 };
