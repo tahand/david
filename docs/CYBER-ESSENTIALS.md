@@ -1,0 +1,70 @@
+# Cyber Essentials
+
+How the clinic appointment system supports the five [Cyber Essentials](https://www.ncsc.gov.uk/cyberessentials/overview) technical controls (SPEC §11).
+
+- **Status meanings:** **Met** means the code or config does this today. **Planned** means a named build phase delivers it. **Clinic** means an organisational task the software can't do for you.
+- **Scope:** certification covers the whole organisation (staff devices, cloud accounts, the server), not just this app. This document covers what the software and its deployment can do. The clinic owns the rest and the assessment itself.
+- **Check before each assessment:** the requirements change over time. Compare this list with the current NCSC / IASME "Requirements for IT Infrastructure" and the question set for your assessment, and update this file.
+
+Last reviewed: 2026-10-30.
+
+## 1. Firewalls
+
+| Requirement                                                       | Status             | Where                                                                                                                                               |
+| ----------------------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inbound traffic denied by default; only required services exposed | Planned (phase 11) | `deploy/provision.sh`: UFW default-deny, allow 22/80/443. Also a DigitalOcean Cloud Firewall with the same rules (SPEC §11).                        |
+| Admin interfaces not exposed to the internet                      | Planned (phase 11) | SSH restricted to admin IPs where possible. No database or admin port is public.                                                                    |
+| Database not reachable from outside                               | Met / Planned      | The API connects over loopback. Production PostgreSQL `listen_addresses = 'localhost'` (phase 11). The local Docker stack doesn't publish Postgres. |
+| App not reachable except through the reverse proxy                | Met                | API binds `127.0.0.1` by default (`HOST`, `apps/api/src/config.ts`). Nginx is the only public entry point.                                          |
+| Local test stack not exposed on the network                       | Met                | `docker-compose.local.yml` and `docker-compose.dev.yml` bind every published port to `127.0.0.1`.                                                   |
+
+## 2. Secure configuration
+
+| Requirement                                            | Status                      | Where                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------ | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No default or guessable passwords in production        | Met                         | Demo seed refuses `NODE_ENV=production` (`apps/api/prisma/seed.ts`). The first admin is created with `create-admin`, which enforces the password policy (`apps/api/scripts/create-admin.ts`). Production DB roles get generated passwords (`deploy/sql/bootstrap.sql`). Dev passwords in `dev-init.sh` are local only. |
+| Secrets not in source control                          | Met                         | `.env*` gitignored. Secrets come from env vars validated at startup (`config.ts`). `.env.docker` is generated with random values.                                                                                                                                                                                      |
+| Unnecessary software, services and accounts removed    | Planned (phase 11) / Clinic | Minimal server package list in `provision.sh`. The clinic removes unused staff accounts (see §4).                                                                                                                                                                                                                      |
+| Software doesn't advertise versions                    | Met                         | `x-powered-by` disabled (`apps/api/src/app.ts`), `server_tokens off` (`deploy/local/nginx.conf`; same in the production config, phase 11). Errors never return stack traces (`middleware/errorHandler.ts`).                                                                                                            |
+| Sessions locked or ended after inactivity              | Met                         | Idle timeout 30 min (staff) / 60 min (patients), absolute 12 h (`modules/auth/sessions.ts`). A warning appears 2 minutes before.                                                                                                                                                                                       |
+| Security headers / hardened TLS                        | Met / Planned               | Helmet with strict CSP and HSTS (`app.ts`). TLS and certbot in phase 11.                                                                                                                                                                                                                                               |
+| Staff devices: auto-run off, screen lock, supported OS | Clinic                      | Outside the software.                                                                                                                                                                                                                                                                                                  |
+
+## 3. Security update management
+
+| Requirement                                              | Status                               | Where                                                                                                                                                                                                                                        |
+| -------------------------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Only vendor-supported software                           | Met                                  | Node.js 24 LTS (`.nvmrc`, `engines`, `deploy/local/Dockerfile`); Node 20 reached end of life in April 2026. PostgreSQL 16, Nginx 1.30 stable, Ubuntu 24.04 LTS.                                                                              |
+| High/critical fixes (CVSS v3 ≥ 7) applied within 14 days | Met (detection) / Clinic (deploying) | `npm run check` runs `npm audit --audit-level=high`, so any known high/critical advisory fails the build. Dependabot (`.github/dependabot.yml`) raises PRs for npm packages and Docker images. Someone must merge and deploy within 14 days. |
+| OS packages patched automatically                        | Planned (phase 11)                   | `unattended-upgrades` for security updates (SPEC §11).                                                                                                                                                                                       |
+| Lockfile committed, installs reproducible                | Met                                  | `package-lock.json` committed; images use `npm ci`.                                                                                                                                                                                          |
+| Unsupported software removed                             | Clinic                               | Upgrade before end-of-life dates: Node 24 is supported to about April 2028, PostgreSQL 16 to November 2028.                                                                                                                                  |
+
+## 4. User access control
+
+| Requirement                                                                                   | Status                     | Where                                                                                                                                                                                                                   |
+| --------------------------------------------------------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Accounts only for people who need them; created by an authorised person                       | Met / Planned              | No public staff sign-up. Staff are created by an admin (phase 9); the first admin via CLI only. Patients self-register.                                                                                                 |
+| Least privilege                                                                               | Met                        | Central RBAC (`packages/shared/src/permissions.ts`, `authorize()`) plus per-record checks. Doctors only see their own patients; reception and admin can't read clinical notes. Covered by tests.                        |
+| Separate accounts for admin work                                                              | Met (by design) / Clinic   | One role per account: someone who is both a doctor and an admin uses two accounts. The clinic should keep admin accounts for admin tasks only.                                                                          |
+| MFA on accounts, mandatory for admins                                                         | Met                        | MFA is mandatory for every staff role, admins included. Staff can't do anything until they enrol (`requireAuth`, `middleware/auth.ts`). Patients can opt in.                                                            |
+| Password policy                                                                               | Met                        | At least 12 characters (max 128), checked against known breached passwords (HIBP k-anonymity, `lib/hibp.ts`). No composition rules or forced expiry (`lib/passwordPolicy.ts`). Argon2id hashing.                        |
+| Brute-force protection                                                                        | Met                        | Lockout after 10 consecutive failures; 10 failed logins per account per hour; 5 credential attempts/min/IP; 100 requests/min/IP (`modules/auth/service.ts`, `middleware/rateLimit.ts`). The user is emailed on lockout. |
+| Leavers removed promptly                                                                      | Planned (phase 9) / Clinic | Admins deactivate accounts and revoke sessions (phase 9). The clinic's leaver process must use this on the day someone leaves.                                                                                          |
+| Cloud service admin accounts (DigitalOcean, email provider, GitHub, domain registrar) use MFA | Clinic                     | Turn on MFA for every such account.                                                                                                                                                                                     |
+
+## 5. Malware protection
+
+| Requirement                                                | Status                      | Where                                                                                                                                                        |
+| ---------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Server has malware protection or application allow-listing | Planned (phase 11)          | `provision.sh` installs ClamAV with scheduled scans. The app runs as an unprivileged systemd user with `NoNewPrivileges`, `ProtectSystem=strict` (SPEC §11). |
+| Uploaded files scanned                                     | Planned (phase 2 documents) | SPEC §6.1 documents are a phase 2 feature. File uploads MUST scan files before storing them.                                                                 |
+| Software only from trusted sources                         | Met                         | npm registry with a committed lockfile; official base images; official apt repositories.                                                                     |
+| Staff devices protected                                    | Clinic                      | Anti-malware or allow-listing on all staff devices.                                                                                                          |
+
+## For developers
+
+- Any change that adds a service, port, dependency, runtime or account must keep this document true. Update the table in the same PR.
+- Never pin an end-of-life runtime or base image. When a Dependabot PR for a high or critical fix arrives, merge and deploy it within 14 days.
+- New features that accept files must include malware scanning.
+- New admin or staff features must use `authorize()` and keep MFA mandatory for staff.

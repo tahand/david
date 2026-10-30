@@ -4,7 +4,9 @@
 #
 # Build context is the repo root.
 
-FROM node:20-bookworm-slim AS build
+# Supported releases only (Cyber Essentials: security update management).
+# Dependabot (.github/dependabot.yml) proposes updates to these tags.
+FROM node:24-bookworm-slim AS build
 # Prisma's query engine needs OpenSSL; argon2 compiles with node-gyp when no
 # prebuilt binary matches, which needs Python and a C++ toolchain.
 RUN apt-get update \
@@ -36,7 +38,7 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=5 \
 CMD ["node", "apps/api/dist/index.js"]
 
 # Built SPA served by Nginx, proxying /api to the API (same origin, SPEC §11).
-FROM nginx:1.27-alpine AS web
+FROM nginx:1.30-alpine AS web
 COPY deploy/local/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 EXPOSE 8080

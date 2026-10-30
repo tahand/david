@@ -75,5 +75,11 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
   - Themes live in `apps/web/src/theme/palettes.css` (5 source colours each) and are derived in `tokens.css`. `theme.test.ts` fails if any theme drops below WCAG AA; fix it with that theme's `--mix-*` knobs.
   - The clinic's theme is the `theme` clinic setting; `?theme=<id>` previews one.
 - Mobile-friendly is a requirement for every screen. Build mobile-first: the base Tailwind classes target a 360px-wide phone, and `sm:`/`md:` add the wider layout. No horizontal page scrolling. Touch targets are at least 44px (`min-h-11`), and inputs use `text-base` so iOS doesn't zoom. Use one set of markup that reflows (stacked cards on phones, grid or table from `sm` up), not separate mobile and desktop copies. Check new pages at phone width (DevTools device mode) before finishing.
-- Dependencies: keep `npm audit` clean (high/critical blocks). `overrides` in root `package.json` pins `deepmerge-ts` ≥ 8 for Prisma 6.
+- Cyber Essentials is a requirement (SPEC §11):
+  - Keep `docs/CYBER-ESSENTIALS.md` true. Any change to ports, services, runtimes, base images, accounts, auth or uploads updates it in the same change.
+  - Only vendor-supported runtimes and images: Node 24 LTS today, never an end-of-life line.
+  - High/critical fixes ship within 14 days.
+  - MFA stays mandatory for staff. Lockout must trigger after no more than 10 failed attempts.
+  - Uploads must be malware-scanned.
+- Dependencies: keep `npm audit` clean (high/critical blocks; `npm run check` runs `npm run audit`). `overrides` in root `package.json` pins `deepmerge-ts` ≥ 8 for Prisma 6.
 - Conventional commits.

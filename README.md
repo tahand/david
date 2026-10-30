@@ -4,7 +4,7 @@ Online appointment booking for a doctors' clinic. See [SPEC.md](SPEC.md) for req
 
 ## Getting started
 
-Requirements: Node 20.12+ (20 LTS in production), Docker Desktop (for local Postgres).
+Requirements: Node 24 LTS (also in production), Docker Desktop (for local Postgres).
 
 ```sh
 npm install

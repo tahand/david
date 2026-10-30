@@ -26,7 +26,7 @@ A web application where patients register, log in, manage their personal and med
 | Layer | Choice |
 |---|---|
 | Frontend | React 18 + TypeScript, Vite, React Router, TanStack Query, React Hook Form + Zod, Tailwind CSS |
-| Backend | Node.js 20 LTS + TypeScript, Express 4 |
+| Backend | Node.js 24 LTS + TypeScript, Express 4 (always a vendor-supported LTS line; see §11 Cyber Essentials) |
 | Database | PostgreSQL 16, installed **locally on the Droplet**, listening on `127.0.0.1` only |
 | DB access | Prisma ORM (migrations + typed client). Raw SQL only through Prisma's parameterised `$queryRaw` tagged template |
 | Validation | Zod schemas, shared between frontend and backend (`packages/shared`) |
@@ -362,6 +362,34 @@ Follow the **OWASP ASVS Level 2** and **OWASP Top 10** as the baseline.
 **Compliance**
 - Design to support GDPR / UK GDPR (and HIPAA-style safeguards if used in the US): consent recording, data export, retention & erasure, audit trail, least-privilege access. Note: final legal compliance (e.g. signed agreements with the hosting/email provider, DPIA) is the clinic's responsibility — list these in `docs/COMPLIANCE.md`.
 
+**Cyber Essentials (MUST)**
+
+The system MUST meet the UK Cyber Essentials technical controls wherever code, configuration or deployment scripts can. Organisational items (staff devices, the DigitalOcean and email-provider accounts, the certification itself) are the clinic's responsibility. `docs/CYBER-ESSENTIALS.md` maps each control to where it is met and lists what the clinic must do. Check it against the current NCSC/IASME requirements before each assessment.
+
+1. **Firewalls.** Deny inbound by default. Expose only 22, 80 and 443, with SSH ideally restricted to admin IPs. Use both UFW and a DigitalOcean Cloud Firewall. Bind PostgreSQL and the Node app to loopback. Local Docker ports bind to `127.0.0.1` only.
+2. **Secure configuration.**
+   - No default or shared credentials in production: demo seed data refuses `NODE_ENV=production`, and the first admin is created with a strong password via `create-admin`.
+   - Remove or disable unused accounts, services and software.
+   - No version banners (`server_tokens off`, `x-powered-by` disabled).
+   - Sessions time out when idle (§4.3).
+3. **Security update management.**
+   - Only vendor-supported versions of the OS, Node.js (LTS), PostgreSQL, Nginx and npm packages.
+   - Apply high and critical fixes (CVSS v3 ≥ 7, or those the vendor calls critical or high) within **14 days** of release.
+   - `npm run check` includes `npm audit --audit-level=high`.
+   - Dependabot proposes npm and Docker image updates.
+   - `unattended-upgrades` patches the server.
+4. **User access control.**
+   - Accounts are created only by an admin (staff) or self-registration (patients), with least-privilege roles (§3).
+   - MFA is mandatory for every staff account, admins included.
+   - Passwords are at least 12 characters, checked against breached-password lists, with no forced periodic changes.
+   - Brute-force protection: lockout after no more than 10 failed attempts, plus rate limits (§4.5).
+   - Admin work uses a dedicated admin account (one role per account).
+   - Leavers' accounts are deactivated promptly (§9 admin).
+5. **Malware protection.**
+   - The Droplet runs anti-malware (e.g. ClamAV with scheduled scans) or application allow-listing.
+   - Any file-upload feature MUST scan files before storing them.
+   - Only install software from trusted sources: the npm registry with a committed lockfile, and official apt repositories.
+
 ---
 
 ## 12. Deployment on DigitalOcean
@@ -395,7 +423,7 @@ Follow the **OWASP ASVS Level 2** and **OWASP Top 10** as the baseline.
 - Document and **test** the restore procedure in `docs/RESTORE.md`.
 
 ### 12.5 Deliverables for deployment
-- `deploy/provision.sh` — idempotent server setup script (users, packages, Postgres 16, Node 20, Nginx, certbot, UFW, fail2ban, volume mount).
+- `deploy/provision.sh` — idempotent server setup script (users, packages, Postgres 16, Node 24 LTS, Nginx, certbot, UFW, fail2ban, unattended-upgrades, malware protection, volume mount).
 - `deploy/nginx.conf`, `deploy/clinic-api.service`, `deploy/backup.sh`.
 - `deploy/deploy.sh` — pull, `npm ci`, build, `prisma migrate deploy`, restart service, health check.
 - Health endpoint `GET /api/health` (checks DB connectivity, returns no sensitive info).
@@ -497,6 +525,7 @@ Work through these in order. At the end of each phase: run lint, type-check and 
 - [ ] SSL Labs grade A or better; securityheaders.com grade A.
 - [ ] Nightly backup runs, and a restore from backup has been tested and documented.
 - [ ] All unit, API and E2E tests pass; `npm audit` reports no high/critical issues.
+- [ ] Every Cyber Essentials control in `docs/CYBER-ESSENTIALS.md` is marked met or has a named owner. Every runtime and base image is a vendor-supported release.
 
 ---
 
