@@ -11,6 +11,8 @@ export default tseslint.config(
       '**/coverage/**',
       '**/node_modules/**',
       'apps/api/prisma/migrations/**',
+      // Git worktrees used by parallel sessions live here.
+      '.claude/**',
     ],
   },
   js.configs.recommended,
