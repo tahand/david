@@ -11,11 +11,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prisma:generate": "prisma generate",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:migrate": "node scripts/prisma-migrator.mjs migrate deploy",
+    "db:migrate:dev": "node scripts/prisma-migrator.mjs migrate dev",
+    "db:seed": "tsx --conditions=@clinic/source prisma/seed.ts",
+    "db:status": "node scripts/prisma-migrator.mjs migrate status",
+    "test:db": "vitest run --config vitest.db.config.ts"
   },
   "dependencies": {
     "@clinic/shared": "*",
     "@prisma/client": "~6.19.3",
+    "argon2": "^0.45.1",
     "express": "^4.22.3",
     "helmet": "^8.3.0",
     "pino": "^9.14.0",

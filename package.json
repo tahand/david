@@ -6,7 +6,7 @@
   "description": "Doctors online appointment system",
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=20.11"
+    "node": ">=20.12"
   },
   "workspaces": [
     "packages/*",
@@ -21,9 +21,12 @@
     "format:check": "prettier --check .",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run test:db",
     "db:up": "docker compose -f docker-compose.dev.yml up -d",
-    "db:down": "docker compose -f docker-compose.dev.yml down"
+    "db:down": "docker compose -f docker-compose.dev.yml down",
+    "db:migrate": "npm run db:migrate -w @clinic/api",
+    "db:seed": "npm run db:seed -w @clinic/api",
+    "test:db": "npm run test:db -w @clinic/api"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -45,6 +48,7 @@
     "esbuild@0.28.2": true,
     "prisma@6.19.3": true,
     "@prisma/client@6.19.3": true,
-    "@prisma/engines@6.19.3": true
+    "@prisma/engines@6.19.3": true,
+    "argon2@0.45.1": true
   }
 }

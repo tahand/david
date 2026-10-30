@@ -15,6 +15,15 @@ Doctors online appointment system. `SPEC.md` is the source of truth; build proce
 - `npm run dev:api` / `npm run dev:web` — API reads `../../.env` (copy `.env.example`).
 - `npm run db:up` — local Postgres 16 via `docker-compose.dev.yml` (dev only).
 - `npm run build` — shared → api → web.
+- `npm run db:migrate` / `db:seed` — migrations run as `app_migrator` via `apps/api/scripts/prisma-migrator.mjs`; the app and seed run as `app_user`.
+- `npm run test:db` — `*.db.test.ts` against `clinic_test` (dev container on port 5433). Never call `prisma migrate reset` from automation; tests must use unique rows instead of relying on a clean DB.
+
+## Database
+
+- Schema in `apps/api/prisma/schema.prisma`. Things Prisma can't express (exclusion constraint, CHECKs, grants, append-only triggers) go in hand-written SQL migrations.
+- New tables get SELECT/INSERT/UPDATE for `app_user` via default privileges; grant DELETE explicitly only for ephemeral data. Patients/users are soft-deleted.
+- `audit_logs` and `clinical_notes` are append-only (grants + triggers). Corrections to notes are new rows with `amends_note_id`.
+- Columns ending `_enc` hold AES-256-GCM envelopes (phase 5); the key version is embedded in the envelope.
 
 ## Conventions
 
