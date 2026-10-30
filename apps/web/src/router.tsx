@@ -25,7 +25,12 @@ import { FrontDeskPage } from './pages/staff/FrontDeskPage';
 import { NewPatientPage } from './pages/staff/NewPatientPage';
 import { PatientDetailPage } from './pages/staff/PatientDetailPage';
 import { PatientsPage } from './pages/staff/PatientsPage';
-import { PlaceholderPage } from './pages/staff/PlaceholderPage';
+import { AppointmentTypesPage } from './pages/admin/AppointmentTypesPage';
+import { AuditLogPage } from './pages/admin/AuditLogPage';
+import { NewStaffPage } from './pages/admin/NewStaffPage';
+import { SettingsPage } from './pages/admin/SettingsPage';
+import { UserDetailPage } from './pages/admin/UserDetailPage';
+import { UsersPage } from './pages/admin/UsersPage';
 import { SchedulePage } from './pages/staff/SchedulePage';
 
 /** Wires the API client's global 401/403 handling to navigation (SPEC §10). */
@@ -132,7 +137,12 @@ export const routes: RouteObject[] = [
           {
             element: <RequireAuth roles={['admin']} />,
             children: [
-              { path: '/admin/users', element: <PlaceholderPage title="Users" phase="phase 9" /> },
+              { path: '/admin/users', element: <UsersPage /> },
+              { path: '/admin/users/new', element: <NewStaffPage /> },
+              { path: '/admin/users/:id', element: <UserDetailPage /> },
+              { path: '/admin/appointment-types', element: <AppointmentTypesPage /> },
+              { path: '/admin/settings', element: <SettingsPage /> },
+              { path: '/admin/audit-logs', element: <AuditLogPage /> },
             ],
           },
         ],

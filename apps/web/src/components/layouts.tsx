@@ -64,6 +64,9 @@ const NAV: Record<Role, { to: string; label: string }[]> = {
     { to: '/front-desk', label: 'Front desk' },
     { to: '/patients', label: 'Patients' },
     { to: '/availability', label: 'Availability' },
+    { to: '/admin/appointment-types', label: 'Appointment types' },
+    { to: '/admin/settings', label: 'Settings' },
+    { to: '/admin/audit-logs', label: 'Audit log' },
     { to: '/account/security', label: 'Security' },
   ],
 };

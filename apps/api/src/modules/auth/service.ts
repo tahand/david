@@ -1,4 +1,4 @@
-import type { PrismaClient, User } from '@prisma/client';
+import type { EmailTokenType, PrismaClient, User } from '@prisma/client';
 import type { Logger } from 'pino';
 import {
   isStaffRole,
@@ -46,6 +46,10 @@ export const DEFAULT_AUTH_LIMITS: AuthLimits = {
 
 const VERIFY_EMAIL_TTL_MS = 24 * 60 * 60 * 1000;
 const RESET_PASSWORD_TTL_MS = 30 * 60 * 1000;
+/** Admin-issued set-password links: the recipient didn't ask, so give them longer. */
+export const INVITE_TTL_MS = 72 * 60 * 60 * 1000;
+/** Token types that let someone choose a new password at /reset-password. */
+const PASSWORD_TOKEN_TYPES: EmailTokenType[] = ['reset_password', 'invite'];
 const RECOVERY_CODE_COUNT = 10;
 
 const INVALID_CREDENTIALS = 'Email or password is incorrect';
@@ -125,11 +129,7 @@ export class AuthService {
     };
   }
 
-  private async createEmailToken(
-    userId: string,
-    type: 'verify_email' | 'reset_password',
-    ttlMs: number,
-  ) {
+  private async createEmailToken(userId: string, type: EmailTokenType, ttlMs: number) {
     const token = randomToken(32);
     await this.prisma.emailToken.create({
       data: { userId, type, tokenHash: sha256(token), expiresAt: new Date(Date.now() + ttlMs) },
@@ -138,13 +138,14 @@ export class AuthService {
   }
 
   /** Atomically consumes a valid, unused token. Returns its user, or throws INVALID_TOKEN. */
-  private async consumeEmailToken(token: string, type: 'verify_email' | 'reset_password') {
+  private async consumeEmailToken(token: string, types: EmailTokenType[]) {
     const row = await this.prisma.emailToken.findUnique({
       where: { tokenHash: sha256(token) },
       include: { user: true },
     });
     const invalid = new AppError(400, 'INVALID_TOKEN', 'This link is invalid or has expired');
-    if (!row || row.type !== type || row.usedAt || row.expiresAt <= new Date()) throw invalid;
+    if (!row || !types.includes(row.type) || row.usedAt || row.expiresAt <= new Date())
+      throw invalid;
     if (!this.isUsable(row.user)) throw invalid;
     const { count } = await this.prisma.emailToken.updateMany({
       where: { id: row.id, usedAt: null },
@@ -318,7 +319,7 @@ export class AuthService {
   }
 
   async verifyEmail(token: string, meta: RequestMeta): Promise<void> {
-    const user = await this.consumeEmailToken(token, 'verify_email');
+    const user = await this.consumeEmailToken(token, ['verify_email']);
     if (!user.emailVerifiedAt) {
       await this.prisma.user.update({
         where: { id: user.id },
@@ -490,11 +491,7 @@ export class AuthService {
       );
       return;
     }
-    // Only the newest link works.
-    await this.prisma.emailToken.updateMany({
-      where: { userId: user.id, type: 'reset_password', usedAt: null },
-      data: { usedAt: new Date() },
-    });
+    await this.revokePasswordLinks(user.id);
     const token = await this.createEmailToken(user.id, 'reset_password', RESET_PASSWORD_TTL_MS);
     const settings = await getClinicSettings(this.prisma);
     this.email(
@@ -515,19 +512,59 @@ export class AuthService {
     );
   }
 
+  /** Only the newest set-password link works, whichever kind it is. */
+  private async revokePasswordLinks(userId: string): Promise<void> {
+    await this.prisma.emailToken.updateMany({
+      where: { userId, type: { in: PASSWORD_TOKEN_TYPES }, usedAt: null },
+      data: { usedAt: new Date() },
+    });
+  }
+
+  /**
+   * Emails an admin-issued link to choose a password (72 h): for a new staff
+   * account, or after an admin forces a reset. Callers audit the admin action.
+   */
+  async issuePasswordLink(
+    user: Pick<User, 'id' | 'email'>,
+    reason: 'new_account' | 'admin_reset',
+  ): Promise<void> {
+    await this.revokePasswordLinks(user.id);
+    const token = await this.createEmailToken(user.id, 'invite', INVITE_TTL_MS);
+    const settings = await getClinicSettings(this.prisma);
+    this.email(
+      templates.passwordLinkMessage(
+        user.email,
+        reason,
+        this.link('/reset-password', token),
+        settings.clinicName,
+      ),
+    );
+  }
+
   async resetPassword(token: string, password: string, meta: RequestMeta): Promise<void> {
     // Validate the token's owner before policy so the email check uses the right address.
     const row = await this.prisma.emailToken.findUnique({
       where: { tokenHash: sha256(token) },
       include: { user: true },
     });
-    if (row && row.type === 'reset_password' && !row.usedAt && row.expiresAt > new Date()) {
+    if (
+      row &&
+      PASSWORD_TOKEN_TYPES.includes(row.type) &&
+      !row.usedAt &&
+      row.expiresAt > new Date()
+    ) {
       await assertPasswordAcceptable(password, row.user.email, this.deps.isBreached);
     }
-    const user = await this.consumeEmailToken(token, 'reset_password');
+    const user = await this.consumeEmailToken(token, PASSWORD_TOKEN_TYPES);
     await this.prisma.user.update({
       where: { id: user.id },
-      data: { passwordHash: await hashPassword(password), failedLoginCount: 0, lockedUntil: null },
+      data: {
+        passwordHash: await hashPassword(password),
+        failedLoginCount: 0,
+        lockedUntil: null,
+        // Following an emailed link proves the address, which matters for invited staff.
+        emailVerifiedAt: user.emailVerifiedAt ?? new Date(),
+      },
     });
     await this.deps.limiter.reset(`login-fail:${user.email}`);
     await this.deps.sessions.destroyAllForUser(user.id);

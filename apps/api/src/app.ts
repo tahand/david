@@ -18,6 +18,8 @@ import { rateLimit } from './middleware/rateLimit.js';
 import { appointmentRoutes, appointmentTypeRoutes } from './modules/appointments/routes.js';
 import { AppointmentNotifier } from './modules/appointments/notifications.js';
 import { AppointmentService } from './modules/appointments/service.js';
+import { adminRoutes } from './modules/admin/routes.js';
+import { AdminService } from './modules/admin/service.js';
 import { authRoutes } from './modules/auth/routes.js';
 import { AuthService, type AuthLimits } from './modules/auth/service.js';
 import { SessionStore } from './modules/auth/sessions.js';
@@ -163,6 +165,17 @@ export function createApp(deps: AppDeps): Express {
   app.use('/api/doctors', doctorRoutes({ service: doctorService }));
   app.use('/api/appointments', appointmentRoutes({ service: appointmentService }));
   app.use('/api/appointment-types', appointmentTypeRoutes({ service: appointmentService }));
+  app.use(
+    '/api/admin',
+    adminRoutes({
+      service: new AdminService({
+        prisma,
+        sessions,
+        auth: authService,
+        timezone: config.clinicTimezone,
+      }),
+    }),
+  );
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);

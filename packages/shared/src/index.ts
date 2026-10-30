@@ -7,3 +7,4 @@ export * from './patients.js';
 export * from './availability.js';
 export * from './appointments.js';
 export * from './theme.js';
+export * from './admin.js';

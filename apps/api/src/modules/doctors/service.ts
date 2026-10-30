@@ -24,8 +24,10 @@ import type { AvailabilityUpdate, ExceptionCreate, SlotsQuery } from './schemas.
 
 type Actor = Pick<User, 'id' | 'role'>;
 
-/** Doctors whose login is active and not deleted. */
-export const activeDoctor: Prisma.DoctorWhereInput = { user: { isActive: true, deletedAt: null } };
+/** Doctors whose login is active and still has the doctor role (admins can change roles). */
+export const activeDoctor: Prisma.DoctorWhereInput = {
+  user: { isActive: true, deletedAt: null, role: 'doctor' },
+};
 
 const toProfile = (d: Doctor): DoctorProfile => ({
   id: d.id,

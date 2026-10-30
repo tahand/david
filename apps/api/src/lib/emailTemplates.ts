@@ -152,3 +152,28 @@ export function appointmentMessage(
       footer(d.clinicName),
   };
 }
+
+/** Admin-issued "choose your password" link (new staff account or admin-forced reset). */
+export function passwordLinkMessage(
+  to: string,
+  reason: 'new_account' | 'admin_reset',
+  link: string,
+  clinicName: string,
+): EmailMessage {
+  const intro =
+    reason === 'new_account'
+      ? `An account has been created for you on the ${clinicName} appointment system.`
+      : `An administrator has reset the password on your ${clinicName} account, so your old password no longer works.`;
+  return {
+    to,
+    subject:
+      reason === 'new_account'
+        ? `Set up your account — ${clinicName}`
+        : `Choose a new password — ${clinicName}`,
+    text:
+      `${intro}\n\nChoose your password using this link within 72 hours:\n\n${link}\n\n` +
+      `The link can only be used once. Staff accounts also need two-step verification, which you'll be asked to set up when you sign in.\n` +
+      `If you weren't expecting this email, contact the clinic.` +
+      footer(clinicName),
+  };
+}

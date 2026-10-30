@@ -30,6 +30,8 @@ enum Role {
 enum EmailTokenType {
   verify_email
   reset_password
+  /// Admin-issued "choose your password" link: new staff, or an admin-forced reset.
+  invite
 
   @@map("email_token_type")
 }
