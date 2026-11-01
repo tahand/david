@@ -40,7 +40,7 @@ jobs:
       PGPASSWORD: postgres
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
@@ -79,6 +79,6 @@ jobs:
   shellcheck:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Shellcheck the deployment scripts
         run: shellcheck -x -S style deploy/*.sh deploy/sql/*.sh
