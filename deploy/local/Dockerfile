@@ -39,7 +39,7 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=5 \
 CMD ["node", "apps/api/dist/index.js"]
 
 # Built SPA served by Nginx, proxying /api to the API (same origin, SPEC §11).
-FROM nginx:1.30-alpine AS web
+FROM nginx:1.31-alpine AS web
 COPY deploy/local/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 EXPOSE 8080
