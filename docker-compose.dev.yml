@@ -3,7 +3,7 @@
 # clinic + clinic_test databases. Reset with: docker compose -f docker-compose.dev.yml down -v
 services:
   postgres:
-    image: postgres:16
+    image: postgres:18
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
