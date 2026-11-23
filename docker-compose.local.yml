@@ -29,7 +29,7 @@ x-app-env: &app-env
 
 services:
   postgres:
-    image: postgres:16
+    image: postgres:18
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
